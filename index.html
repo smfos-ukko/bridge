@@ -6,9 +6,50 @@
         <title>Antin bridgepalikat</title>
         <link rel="stylesheet" href="stuff/bridge.css">
         <link rel="icon" href="stuff/favicon.ico" type="image/x-icon">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     </head>
     <body>
-        <div></div>
+        <div class="banner">
+            <h1>Antin Bridgepalikat</h1>
+        </div>
+        <div id="mainpage" class="subpage activated">
+            <button class="mainbutton" onclick="openPage('bidwriter')">Tarjouspiirtäjä</button>
+        </div>
+        <div id="bidwriter" class="subpage toolpage">
+            <div class="inrow">
+                <div id="bwselect">
+                    <h3>Jakaja</h3>
+                    <div class="inrow">
+                        <button class="bwdealer lit">N</button>
+                        <button class="bwdealer">E</button>
+                        <button class="bwdealer">S</button>
+                        <button class="bwdealer">W</button>
+                    </div>
+                    <h3>Vaarassa</h3>
+                    <div class="inrow">
+                        <button class="bwvul lit">Ei kukaan</button>
+                        <button class="bwvul">Kaikki</button>
+                        <button class="bwvul">NS</button>
+                        <button class="bwvul">EW</button>
+                    </div>
+                </div>
+                <div id="bwenter">
+                    <h3>Tarjoukset</h3>
+                    <table>
+                        <tbody id="bwtable">
+                            <tr>
+                                <th>N</th>
+                                <th>E</th>
+                                <th>S</th>
+                                <th>W</th>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
         <script src="stuff/bridge.js"></script>
     </body>
 </html>

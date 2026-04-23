@@ -1,1 +1,93 @@
+:root {
+    --bg-color: #02030B;
+    --text-color: #d2d2d2;
+    --feature-dark: #37425A;
+    --feature-light: #9FA7BD;
+    --highlight-dark: #bc7e23;
+    --highlight-light: #FAB041;
+    --highlight-alt-dark: #1f821a;
+    --highlight-alt-light: #30bc29;
+}
 
+* {
+    padding: 0;
+    margin: 0;
+    font-family: "Kanit", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+h3 {
+    margin-bottom: 5px;
+}
+
+.banner {
+    background-color: var(--feature-dark);
+    padding: 30px;
+    border-bottom: 5px double var(--feature-light);
+}
+
+.subpage {
+    padding: 20px;
+    opacity: 0;
+    transform: translateY(50px);
+    transition: opacity 100ms ease, transform 100ms ease;
+}
+
+.subpage.activated {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.toolpage {
+    display: hidden;
+}
+
+button {
+    padding: 5px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    font-size: large;
+    background-color: var(--highlight-light);
+    border-style: none;
+    border-radius: 5px;
+    min-width: 40px;
+}
+
+button:hover {
+    background-color: var(--highlight-dark);
+}
+
+.lit {
+    background-color: var(--highlight-alt-light);
+}
+
+.lit:hover {
+    background-color: var(--highlight-alt-dark);
+}
+
+.mainbutton {
+    margin-right: 10px;
+    margin-top: 10px;
+    padding: 10px;
+    font-size: larger;
+    border-radius: 10px;
+}
+
+.inrow {
+    display: flex;
+}
+
+#bwenter {
+    margin-left: 50px;
+}
+
+#bwenter input {
+    width: 50px;
+    text-align: center;
+}
