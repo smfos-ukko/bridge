@@ -13,6 +13,7 @@
     <body>
         <div class="banner">
             <h1>Antin Bridgepalikat</h1>
+            <button id="backbutton" class="mainbutton">Etusivulle</button>
         </div>
         <div id="mainpage" class="subpage activated">
             <button class="mainbutton" onclick="openPage('bidwriter')">Tarjouspiirtäjä</button>
@@ -49,7 +50,25 @@
                     </table>
                 </div>
             </div>
+            <div id="bwtablebg" class="inline">
+                <div id="bwtableback">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="bwPanel nonvul">N</th>
+                                <th class="bwPanel nonvul">E</th>
+                                <th class="bwPanel nonvul">S</th>
+                                <th class="bwPanel nonvul">W</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bwboard">
+                        </tbody>
+                    </table>
+                </div>
+                <button id="bwSnap" class="mainbutton">Tallenna kuvana</button>
+            </div>
         </div>
         <script src="stuff/bridge.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     </body>
 </html>

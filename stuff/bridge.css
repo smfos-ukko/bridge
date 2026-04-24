@@ -27,6 +27,10 @@ h3 {
 }
 
 .banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 75px;
     background-color: var(--feature-dark);
     padding: 30px;
     border-bottom: 5px double var(--feature-light);
@@ -83,6 +87,14 @@ button:hover {
     display: flex;
 }
 
+#backbutton {
+    display: none;
+}
+
+#bidwriter {
+    max-width: 600px;
+}
+
 #bwenter {
     margin-left: 50px;
 }
@@ -90,4 +102,83 @@ button:hover {
 #bwenter input {
     width: 50px;
     text-align: center;
+}
+
+#bwboard td {
+    background-color: white;
+    color: black;
+    text-align: center;
+    font-size: x-large;
+    min-width: 50px;
+    min-height: 10px;
+}
+
+.club {
+    color: rgb(0, 152, 0);
+}
+
+.diamond {
+    color:rgb(191, 187, 0)
+}
+
+.heart {
+    color: red;
+}
+
+.spade {
+    color: black;
+}
+
+.dbl {
+    display: inline-block;
+    color: white;
+    background-color: red;
+    padding: 2px 2px;
+    line-height: 1;
+    border-radius: 5px;
+}
+
+.rdbl {
+    display: inline-block;
+    color: white;
+    background-color: blue;
+    padding: 2px 2px;
+    line-height: 1;
+    border-radius: 5px;
+}
+
+.pass {
+    color: green;
+    text-transform: uppercase;
+    font-size: small;
+}
+
+.vul {
+    background-color: rgb(161, 0, 0);
+}
+
+.nonvul {
+    background-color: green;
+}
+
+#bwtablebg {
+    background-color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-top: 30px;
+}
+
+#bwtableback {
+    background-color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: fit-content;
+    padding: 5px;
+}
+
+#bwtableback th {
+    font-size: larger;
 }

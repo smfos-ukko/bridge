@@ -1,24 +1,21 @@
 const mainPage = document.getElementById('mainpage');
+const backButton = document.getElementById('backbutton');
 
-window.onload = () => {
-    const pages = document.getElementsByClassName('toolpage');
-    for (let page of pages) {
-        const backButton = document.createElement('button');
-        backButton.innerHTML = 'Etusivulle';
-        backButton.classList.add('mainbutton');
-        backButton.onclick = () => {
-            backButton.parentElement.classList.remove('activated');
-            setTimeout(() => {
-                mainPage.style.display = 'block';
-                backButton.parentElement.style.display = 'none';
-            }, 100);
-            setTimeout(() => {
-                mainPage.classList.add('activated');
-            }, 200);
-        }
-        page.appendChild(backButton);
+backButton.onclick = () => {
+    const toolPages = document.getElementsByClassName('toolpage');
+    for (let toolPage of toolPages) {
+        if (!toolPage.classList.contains('activated')) return;
+        toolPage.classList.remove('activated');
+        setTimeout(() => {
+            mainPage.style.display = 'block';
+            toolPage.style.display = 'none';
+            backButton.style.display = 'none';
+        }, 100);
+        setTimeout(() => {
+            mainPage.classList.add('activated');
+        }, 200);
     }
-}
+};
 
 openPage = (page) => {
     mainPage.classList.remove('activated');
@@ -26,16 +23,37 @@ openPage = (page) => {
     setTimeout(() => {
         mainPage.style.display = 'none';
         pe.style.display = 'block';
-    }, 100);   
+        backButton.style.display = 'block';
+    }, 100);
     setTimeout(() => {
         pe.classList.add('activated');
     }, 200);
-}
+};
+
+const formatBid = (str) => {
+    let formattedStr = str.toUpperCase();
+    formattedStr = formattedStr.replace(/XX|X|C|D|H|S/g, (match) => {
+        switch (match) {
+            case 'XX':
+                return '<span class="rdbl">XX</span>';
+            case 'X':
+                return '<span class="dbl">X</span>';
+            case 'C':
+                return '<span class="club"> ♣</span>';
+            case 'D':
+                return '<span class="diamond"> ♦</span>';
+            case 'H':
+                return '<span class="heart"> ♥</span>';
+            case 'S':
+                return '<span class="spade"> ♠</span>';
+        }
+    });
+    return formattedStr;
+};
 
 //bidwriter
 const bwDealerButtons = document.getElementsByClassName('bwdealer');
 const bwVulButtons = document.getElementsByClassName('bwvul');
-const bwTable = document.getElementById('bwtable');
 let bwDealer = 'N';
 let bwVul = 'Ei kukaan';
 
@@ -46,7 +64,8 @@ for (let bwdb of bwDealerButtons) {
         }
         bwdb.classList.add('lit');
         bwDealer = bwdb.innerHTML;
-    }
+        bwWriting();
+    };
 }
 
 for (let bwvb of bwVulButtons) {
@@ -56,18 +75,157 @@ for (let bwvb of bwVulButtons) {
         }
         bwvb.classList.add('lit');
         bwVul = bwvb.innerHTML;
-    }
+        const bwPanel = document.getElementsByClassName('bwPanel');
+        for (let bwp of bwPanel) {
+            bwp.classList.remove('nonvul');
+            bwp.classList.remove('vul');
+        }
+        switch (bwVul) {
+            case 'Ei kukaan':
+                bwPanel[0].classList.add('nonvul');
+                bwPanel[1].classList.add('nonvul');
+                bwPanel[2].classList.add('nonvul');
+                bwPanel[3].classList.add('nonvul');
+                break;
+            case 'Kaikki':
+                bwPanel[0].classList.add('vul');
+                bwPanel[1].classList.add('vul');
+                bwPanel[2].classList.add('vul');
+                bwPanel[3].classList.add('vul');
+                break;
+            case 'NS':
+                bwPanel[0].classList.add('vul');
+                bwPanel[1].classList.add('nonvul');
+                bwPanel[2].classList.add('vul');
+                bwPanel[3].classList.add('nonvul');
+                break;
+            case 'EW':
+                bwPanel[0].classList.add('nonvul');
+                bwPanel[1].classList.add('vul');
+                bwPanel[2].classList.add('nonvul');
+                bwPanel[3].classList.add('vul');
+                break;
+        }
+    };
 }
 
 let bwNumberOfRows = 0;
+const bwTable = document.getElementById('bwtable');
+const bwBoard = document.getElementById('bwboard');
+let bwInputs;
+
 const bwAddRow = () => {
-    bwTable.innerHTML += `
-        <tr>
-            <th><input type="text" data-index="${bwNumberOfRows} N"></th>
-            <th><input type="text" data-index="${bwNumberOfRows} E"></th>
-            <th><input type="text" data-index="${bwNumberOfRows} S"></th>
-            <th><input type="text" data-index="${bwNumberOfRows} W"></th>
-        </tr>
+    const bwNewRow = document.createElement('tr');
+    bwNewRow.innerHTML += `
+        <td><input type="text" data-index="${bwNumberOfRows} N"></td>
+        <td><input type="text" data-index="${bwNumberOfRows} E"></td>
+        <td><input type="text" data-index="${bwNumberOfRows} S"></td>
+        <td><input type="text" data-index="${bwNumberOfRows} W"></td>
     `;
-}
+    bwTable.appendChild(bwNewRow);
+};
 bwAddRow();
+bwAddRow();
+
+const bwRemoveRow = () => {
+    bwTable.querySelector('tr:last-child').remove();
+};
+
+const bwWriting = () => {
+    applyDirection();
+    //add / remove rows
+    const bwLastRow = bwTable.querySelector('tr:last-child');
+    const bwPrevRow = bwTable.querySelector('tr:nth-last-child(2)');
+    let bwLastRowInputs = bwLastRow.querySelectorAll('input');
+    let prevRowHasContent = false;
+    if (bwPrevRow) {
+        let bwPrevRowInputs = bwPrevRow.querySelectorAll('input');
+        prevRowHasContent = Array.from(bwPrevRowInputs).some(
+            (input) => input.value.trim() !== ''
+        );
+    }
+    const lastRowHasContent = Array.from(bwLastRowInputs).some(
+        (input) => input.value.trim() !== ''
+    );
+    bwNumberOfRows = bwTable.querySelectorAll('tr').length - 2;
+    if (lastRowHasContent) {
+        bwAddRow();
+    }
+    if (
+        bwNumberOfRows > 1 &&
+        lastRowHasContent == false &&
+        prevRowHasContent == false
+    ) {
+        bwRemoveRow();
+        bwWriting();
+    }
+    const bwAllInputCells = document.querySelectorAll('#bwtable input');
+
+    //update board
+    let bwInjections = '';
+    let bwPassCounter = 0;
+    const bwCheckEnd = (bwCounter) => {
+        if (bwCounter % 4 == 3) bwInjections += '</tr>';
+    };
+    for (let [bwCounter, bwBoardCell] of bwAllInputCells.entries()) {
+        //begin row
+        if (bwCounter % 4 == 0) {
+            bwInjections += '<tr>';
+        }
+        //handle dealer
+        if (bwBoardCell.hasAttribute('disabled')) {
+            bwInjections += '<td></td>';
+            continue;
+        }
+        //handle cell
+        if (bwPassCounter > 2) {
+            bwInjections += '<td></td>';
+            bwCheckEnd(bwCounter);
+            continue;
+        }
+        if (bwBoardCell.value == '') {
+            bwInjections += '<td><span class="pass">pass</span></td>';
+            bwPassCounter++;
+        } else {
+            bwInjections += '<td>' + formatBid(bwBoardCell.value) + '</td>';
+            bwPassCounter = 0;
+        }
+        bwCheckEnd(bwCounter);
+    }
+    bwBoard.innerHTML = bwInjections;
+};
+
+const applyDirection = () => {
+    const bwDirCells = bwTable
+        .querySelector('tr:nth-child(2)')
+        .querySelectorAll('td');
+    for (let bwa of bwDirCells) {
+        bwa.firstChild.removeAttribute('disabled');
+    }
+    if (bwDealer == 'N') return;
+    bwDirCells[0].firstChild.value = '';
+    bwDirCells[0].firstChild.setAttribute('disabled', 'disabled');
+    if (bwDealer == 'E') return;
+    bwDirCells[1].firstChild.value = '';
+    bwDirCells[1].firstChild.setAttribute('disabled', 'disabled');
+    if (bwDealer == 'S') return;
+    bwDirCells[2].firstChild.value = '';
+    bwDirCells[2].firstChild.setAttribute('disabled', 'disabled');
+};
+
+bwTable.addEventListener('input', () => {
+    bwWriting();
+});
+
+bwWriting();
+
+document.getElementById('bwSnap').addEventListener('click', () => {
+    const bwClipTable = document.getElementById('bwtableback');
+
+    html2canvas(bwClipTable).then((canvas) => {
+        const link = document.createElement('a');
+        link.download = 'table.png';
+        link.href = canvas.toDataURL();
+        link.click();
+    });
+});
