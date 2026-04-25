@@ -170,6 +170,11 @@ button:hover {
     margin-top: 30px;
 }
 
+#bwtablecanvas {
+    background-color: black;
+    padding: 2px;
+}
+
 #bwtableback {
     background-color: black;
     display: flex;
@@ -181,4 +186,32 @@ button:hover {
 
 #bwtableback th {
     font-size: larger;
+}
+
+@media (max-width: 630px) {
+    .banner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    h1 {
+        font-size: x-large;
+    }
+
+    .inrow {
+        flex-direction: column;
+    }
+
+    #bwenter {
+        margin-left: 0;
+    }
+
+    .inline {
+        flex-direction: column;
+    }
+
+    #bwFinalButtons {
+        margin-top: 20px;
+    }
 }

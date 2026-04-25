@@ -117,12 +117,13 @@ let bwInputs;
 const bwAddRow = () => {
     const bwNewRow = document.createElement('tr');
     bwNewRow.innerHTML += `
-        <td><input type="text" data-index="${bwNumberOfRows} N"></td>
-        <td><input type="text" data-index="${bwNumberOfRows} E"></td>
-        <td><input type="text" data-index="${bwNumberOfRows} S"></td>
-        <td><input type="text" data-index="${bwNumberOfRows} W"></td>
+        <td><input type="text" data-row-index="${bwNumberOfRows}" data-col-index="0"></td>
+        <td><input type="text" data-row-index="${bwNumberOfRows}" data-col-index="1"></td>
+        <td><input type="text" data-row-index="${bwNumberOfRows}" data-col-index="2"></td>
+        <td><input type="text" data-row-index="${bwNumberOfRows}" data-col-index="3"></td>
     `;
     bwTable.appendChild(bwNewRow);
+    bwNumberOfRows++;
 };
 bwAddRow();
 bwAddRow();
@@ -147,7 +148,7 @@ const bwWriting = () => {
     const lastRowHasContent = Array.from(bwLastRowInputs).some(
         (input) => input.value.trim() !== ''
     );
-    bwNumberOfRows = bwTable.querySelectorAll('tr').length - 2;
+    bwNumberOfRows = bwTable.querySelectorAll('tr').length - 1;
     if (lastRowHasContent) {
         bwAddRow();
     }
@@ -217,6 +218,67 @@ bwTable.addEventListener('input', () => {
     bwWriting();
 });
 
+bwTable.addEventListener('keydown', (e) => {
+    const key = e.key;
+    if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key))
+        return;
+    const current = e.target;
+    if (!current.matches('input')) return;
+    const currentRow = parseInt(current.getAttribute('data-row-index'));
+    const currentCol = parseInt(current.getAttribute('data-col-index'));
+    let target;
+    if (key == 'ArrowRight') {
+        target = bwTable.querySelector(
+            '[data-row-index="' +
+                currentRow +
+                '"][data-col-index="' +
+                (currentCol + 1) +
+                '"]'
+        );
+    }
+    if (key == 'ArrowLeft') {
+        target = bwTable.querySelector(
+            '[data-row-index="' +
+                currentRow +
+                '"][data-col-index="' +
+                (currentCol - 1) +
+                '"]'
+        );
+    }
+    if (key == 'ArrowUp') {
+        target = bwTable.querySelector(
+            '[data-row-index="' +
+                (currentRow - 1) +
+                '"][data-col-index="' +
+                currentCol +
+                '"]'
+        );
+    }
+    if (key == 'ArrowDown') {
+        target = bwTable.querySelector(
+            '[data-row-index="' +
+                (currentRow + 1) +
+                '"][data-col-index="' +
+                currentCol +
+                '"]'
+        );
+    }
+    if (target && !target.disabled) {
+        target.focus();
+        e.preventDefault();
+    }
+});
+
+bwTable.addEventListener(
+    'focus',
+    (e) => {
+        if (e.target.matches('input')) {
+            e.target.select();
+        }
+    },
+    true
+);
+
 bwWriting();
 
 document.getElementById('bwSnap').addEventListener('click', () => {
@@ -228,4 +290,12 @@ document.getElementById('bwSnap').addEventListener('click', () => {
         link.href = canvas.toDataURL();
         link.click();
     });
+});
+
+document.getElementById('bwReset').addEventListener('click', () => {
+    const bwAllResetInputs = bwTable.querySelectorAll('input');
+    for (let bwr of bwAllResetInputs) {
+        bwr.value = '';
+        bwWriting();
+    }
 });
