@@ -1,0 +1,53 @@
+#systemsheet h3 {
+    margin-top: 15px;
+}
+
+.a4sheet {
+    width: 210mm;
+    height: 297mm;
+    display: flex;
+    border: 1px solid #ccc;
+}
+
+.a5sized {
+    width: 50%;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 10mm;
+    border-right: 1px dashed #aaa;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sheetContent {
+    text-align: center;
+    width: 100%;
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    .a4sheet,
+    .a4sheet * {
+        visibility: visible;
+    }
+
+    .a4sheet {
+        position: absolute;
+        left: 0;
+        top: 0;
+        border: none;
+        flex-direction: column;
+    }
+
+    .a5sized {
+        width: 100%;
+        height: 148.5mm;
+    }
+}
+
+@media (max-width: 630px) {}

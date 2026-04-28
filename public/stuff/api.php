@@ -1,0 +1,134 @@
+<?php
+
+header("Access-Control-Allow-Origin: http://127.0.0.1:5500");
+header("Access-Control-Allow-Credentials: true");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
+session_set_cookie_params([
+    'httponly' => true,
+    'samesite' => 'Lax'
+]);
+
+session_start();
+
+$db = new PDO('sqlite:' . __DIR__ . '/../../private/data.db');
+$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+$db->exec("
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY,
+        username TEXT UNIQUE,
+        password_hash TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS systems (
+        id INTEGER PRIMARY KEY,
+        user_id INTEGER,
+        name TEXT,
+        data TEXT,
+        created_at TEXT,
+        updated_at TEXT
+    );
+");
+
+function jsonResponse($data, $code = 200) {
+    http_response_code($code);
+    header('Content-Type: application/json');
+    echo json_encode($data);
+    exit;
+}
+
+$action = $_GET['action'] ?? '';
+
+switch ($action) {
+    case 'signup':
+        $input = json_decode(file_get_contents('php://input'), true);
+
+        if (!$input['username'] || !$input['password']) {
+            jsonResponse(['error' => 'missing fields'], 400);
+        } 
+
+        $hash = password_hash($input['password'], PASSWORD_DEFAULT);
+
+        try {
+            $stmt = $db->prepare("INSERT INTO users (username, password_hash) VALUES (?, ?)");
+            $stmt->execute([$input['username'], $hash]);
+            jsonResponse(['status' => 'ok']);
+        } catch (PDOException $e) {
+            jsonResponse(['error'=> 'username taken'], 400);
+        }
+        break;
+
+    case 'login':
+        $input = json_decode(file_get_contents('php://input'), true);
+
+        $stmt = $db->prepare("SELECT * FROM users WHERE username = ?");
+        $stmt->execute([$input['username']]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($user && password_verify($input['password'], $user['password_hash'])) {
+            session_regenerate_id(true);
+            $_SESSION['user_id'] = $user['id'];
+            jsonResponse(['status' => 'ok']);
+        } else {
+            jsonResponse(['error' => 'invalid'], 401);
+        }
+        break;
+
+        case 'logout':
+            session_destroy();
+            jsonResponse(['status' => 'ok']);
+            break;
+
+        case 'savesystem':
+            if (!isset($_SESSION['user_id'])) {
+                jsonResponse(['error' => 'unauthorized'], 401);
+            }
+
+            $input = json_decode(file_get_contents('php://input'), true);
+
+            $stmt = $db->prepare("
+                INSERT INTO systems (user_id, name, data, created_at, updated_at)
+                VALUES (?, ?, ?, datetime('now'), datetime('now'))
+            ");
+
+            $stmt->execute([
+                $_SESSION['user_id'],
+                $input['name'],
+                json_encode($input['data'])
+            ]);
+
+            jsonResponse(['status' => 'ok']);
+            break;
+
+        case 'loadsystem':
+            if (!isset($_SESSION['user_id'])) {
+                jsonResponse(['error' => 'unauthorized'], 401);
+            }
+
+            $stmt = $db->prepare("
+                SELECT id, name, data, updated_at
+                FROM systems
+                WHERE user_id = ?
+                ORDER BY updated_at DESC
+            ");
+
+            $stmt->execute([$_SESSION['user_id']]);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($rows as &$row) {
+                $row['data'] = json_decode($row['data'], true);
+            }
+
+            jsonResponse($rows);
+            break;
+
+    default:
+        jsonResponse(['error' => 'unknown action'], 404);
+}

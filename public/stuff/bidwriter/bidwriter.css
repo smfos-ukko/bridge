@@ -1,0 +1,118 @@
+#bidwriter {
+    max-width: 600px;
+}
+
+#bwenter {
+    margin-left: 50px;
+}
+
+#bwenter input {
+    width: 50px;
+    text-align: center;
+}
+
+#bwboard td {
+    background-color: white;
+    color: black;
+    text-align: center;
+    font-size: x-large;
+    min-width: 50px;
+    min-height: 10px;
+}
+
+.club {
+    color: rgb(0, 152, 0);
+}
+
+.diamond {
+    color: rgb(191, 187, 0)
+}
+
+.heart {
+    color: red;
+}
+
+.spade {
+    color: black;
+}
+
+.dbl {
+    display: inline-block;
+    color: white;
+    background-color: red;
+    padding: 2px 2px;
+    line-height: 1;
+    border-radius: 5px;
+}
+
+.rdbl {
+    display: inline-block;
+    color: white;
+    background-color: blue;
+    padding: 2px 2px;
+    line-height: 1;
+    border-radius: 5px;
+}
+
+.pass {
+    color: green;
+    text-transform: uppercase;
+    font-size: small;
+}
+
+.vul {
+    background-color: rgb(161, 0, 0);
+}
+
+.nonvul {
+    background-color: green;
+}
+
+#bwtablebg {
+    background-color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-top: 30px;
+}
+
+#bwOptions {
+    margin-left: 30px;
+}
+
+#bwOptions p {
+    color: black;
+}
+
+#bwtablecanvas {
+    background-color: black;
+    padding: 2px;
+}
+
+#bwtableback {
+    background-color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: fit-content;
+    padding: 5px;
+}
+
+#bwtableback th {
+    font-size: larger;
+}
+
+@media (max-width: 630px) {
+    #bwenter {
+        margin-left: 0;
+    }
+
+    .inline {
+        flex-direction: column;
+    }
+
+    #bwFinalButtons {
+        margin-top: 20px;
+    }
+}
