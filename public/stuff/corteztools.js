@@ -107,6 +107,7 @@ export const dynamicInputTable = (rows, id, headers = null) => {
             input.type = 'text';
             input.dataset.rowIndex = numberOfRows;
             input.dataset.colIndex = i;
+            input.classList.add('dynamic-input');
 
             td.appendChild(input);
             tr.appendChild(td);

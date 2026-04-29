@@ -41,16 +41,16 @@ export function initBidWriter() {
                     bwPanel[3].classList.add('vul');
                     break;
                 case 'NS':
-                    bwPanel[0].classList.add('vul');
-                    bwPanel[1].classList.add('nonvul');
-                    bwPanel[2].classList.add('vul');
-                    bwPanel[3].classList.add('nonvul');
-                    break;
-                case 'EW':
                     bwPanel[0].classList.add('nonvul');
                     bwPanel[1].classList.add('vul');
                     bwPanel[2].classList.add('nonvul');
                     bwPanel[3].classList.add('vul');
+                    break;
+                case 'EW':
+                    bwPanel[0].classList.add('vul');
+                    bwPanel[1].classList.add('nonvul');
+                    bwPanel[2].classList.add('vul');
+                    bwPanel[3].classList.add('nonvul');
                     break;
             }
         };
@@ -112,7 +112,7 @@ export function initBidWriter() {
 
         //update board
         let bwInjections = '';
-        let bwPassCounter = 0;
+        let bwPassCounter = -1;
         const bwCheckEnd = (bwCounter) => {
             if (bwCounter % 4 == 3) bwInjections += '</tr>';
         };
@@ -151,13 +151,13 @@ export function initBidWriter() {
         for (let bwa of bwDirCells) {
             bwa.firstChild.removeAttribute('disabled');
         }
-        if (bwDealer == 'N') return;
+        if (bwDealer == 'W') return;
         bwDirCells[0].firstChild.value = '';
         bwDirCells[0].firstChild.setAttribute('disabled', 'disabled');
-        if (bwDealer == 'E') return;
+        if (bwDealer == 'N') return;
         bwDirCells[1].firstChild.value = '';
         bwDirCells[1].firstChild.setAttribute('disabled', 'disabled');
-        if (bwDealer == 'S') return;
+        if (bwDealer == 'E') return;
         bwDirCells[2].firstChild.value = '';
         bwDirCells[2].firstChild.setAttribute('disabled', 'disabled');
     };

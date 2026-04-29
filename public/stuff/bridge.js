@@ -1,5 +1,11 @@
 const mainPage = document.getElementById('mainpage');
+const loginPanel = document.getElementById('loginslide');
 const backButton = document.getElementById('backbutton');
+const loginButton = document.getElementById('loginbutton');
+const loginMessage = document.getElementById('loginmessage');
+const welcomeText = document.getElementById('welcometext');
+let user = null;
+let token = null;
 
 //MUUTA TAMA KUN OLET VALMIS
 const API = "http://127.0.0.1:8000/stuff/api.php";
@@ -24,24 +30,40 @@ async function api(action, data = null) {
 }
 
 const toggleSlide = () => {
-    const panel = document.getElementById('loginslide');
-    if (panel.classList.contains('open')) {
-        panel.classList.remove('open');
+    if (user) {
+        logout();
     } else {
-        panel.classList.add('open');
+        if (loginPanel.classList.contains('open')) {
+            loginPanel.classList.remove('open');
+        } else {
+            loginPanel.classList.add('open');
+        }
     }
 };
+
+async function logout() {
+    const res = await api('logout');
+    if (!res.error) {
+        user = null;
+        welcomeText.innerText = '';
+        loginButton.innerText = 'Kirjaudu';
+    }
+}
 
 async function signup() {
     const username = document.getElementById('usernameinput').value;
     const password = document.getElementById('passwordinput').value;
     const res = await api('signup', { username, password });
-    console.log(res.error);
     if (!res.error) {
         document.getElementById('loginslide').classList.remove('open');
         login();
     } else {
-        
+        if (res.error == 'missing fields') {
+            loginMessage.innerText = 'Täytä molemmat kentät.';
+        }
+        if (res.error == 'username taken') {
+            loginMessage.innerText = 'Käyttäjänimi on jo olemassa.';
+        }
     }
 }
 
@@ -49,7 +71,15 @@ async function login() {
     username = document.getElementById('usernameinput').value;
     password = document.getElementById('passwordinput').value;
     const res = await api('login', { username, password });
-    console.log(res);
+    if (!res.error) {
+        user = username;
+        token = res.token;
+        welcomeText.innerText = 'Hei ' + user + '!';
+        loginButton.innerText = 'Kirjaudu ulos';
+        document.getElementById('loginslide').classList.remove('open');
+    } else {
+        loginMessage.innerText = 'Väärä käyttäjänimi tai salasana.';
+    }
 }
 
 backButton.onclick = () => {

@@ -24,7 +24,8 @@ $db->exec("
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY,
         username TEXT UNIQUE,
-        password_hash TEXT
+        password_hash TEXT,
+        token TEXT
     );
 
     CREATE TABLE IF NOT EXISTS systems (
@@ -44,6 +45,19 @@ function jsonResponse($data, $code = 200) {
     exit;
 }
 
+function checkAuth() {
+    if (!isset($_SESSION['user_id'])) {
+        $stmt = $db->prepare("SELECT * FROM users WHERE username = ?");
+        $stmt->execute([$input['username']]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($input['token'] == $user['token']) {
+            $_SESSION['user_id'] = $user['id'];
+        } else {
+            jsonResponse(['error' => 'unauthorized'], 401);
+        }
+    }
+}
+
 $action = $_GET['action'] ?? '';
 
 switch ($action) {
@@ -55,10 +69,11 @@ switch ($action) {
         } 
 
         $hash = password_hash($input['password'], PASSWORD_DEFAULT);
+        $token = bin2hex(random_bytes(32));
 
         try {
-            $stmt = $db->prepare("INSERT INTO users (username, password_hash) VALUES (?, ?)");
-            $stmt->execute([$input['username'], $hash]);
+            $stmt = $db->prepare("INSERT INTO users (username, password_hash, token) VALUES (?, ?, ?)");
+            $stmt->execute([$input['username'], $hash, $token]);
             jsonResponse(['status' => 'ok']);
         } catch (PDOException $e) {
             jsonResponse(['error'=> 'username taken'], 400);
@@ -75,7 +90,7 @@ switch ($action) {
         if ($user && password_verify($input['password'], $user['password_hash'])) {
             session_regenerate_id(true);
             $_SESSION['user_id'] = $user['id'];
-            jsonResponse(['status' => 'ok']);
+            jsonResponse(['status' => 'ok', 'token' => $user['token']]);
         } else {
             jsonResponse(['error' => 'invalid'], 401);
         }
@@ -87,11 +102,9 @@ switch ($action) {
             break;
 
         case 'savesystem':
-            if (!isset($_SESSION['user_id'])) {
-                jsonResponse(['error' => 'unauthorized'], 401);
-            }
-
             $input = json_decode(file_get_contents('php://input'), true);
+
+            checkAuth();
 
             $stmt = $db->prepare("
                 INSERT INTO systems (user_id, name, data, created_at, updated_at)
@@ -107,10 +120,17 @@ switch ($action) {
             jsonResponse(['status' => 'ok']);
             break;
 
+        case 'updatesystem':
+            $input = json_decode(file_get_contents('php://input'), true);
+
+            checkAuth();
+
+            break;
+
         case 'loadsystem':
-            if (!isset($_SESSION['user_id'])) {
-                jsonResponse(['error' => 'unauthorized'], 401);
-            }
+            $input = json_decode(file_get_contents('php://input'), true);
+
+            checkAuth();
 
             $stmt = $db->prepare("
                 SELECT id, name, data, updated_at
