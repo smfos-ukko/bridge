@@ -26,6 +26,18 @@
     width: 100%;
 }
 
+#sheetOperations {
+    display: flex;
+}
+
+#sheetManageSystems {
+    background-color: #4e4e4e;
+    min-width: 300px;
+    margin: 20px;
+    border-radius: 10px;
+    padding: 10px;
+}
+
 @media print {
     body * {
         visibility: hidden;

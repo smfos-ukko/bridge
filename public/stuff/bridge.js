@@ -1,20 +1,21 @@
-import { test } from "../systemsheet/systemsheet.js";
+import { loadSystems, unLoadSystems, systemSheet } from "./systemsheet/systemsheet.js";
+import { bidWriter } from "./bidwriter/bidwriter.js";
 
 const mainPage = document.getElementById('mainpage');
 const loginPanel = document.getElementById('loginslide');
 const backButton = document.getElementById('backbutton');
+const authButton = document.getElementById('authbutton');
 const loginButton = document.getElementById('loginbutton');
+const signupButton = document.getElementById('signupbutton');
 const loginMessage = document.getElementById('loginmessage');
 const welcomeText = document.getElementById('welcometext');
 let user = null;
 let token = null;
 
-test();
+export async function api(action, data = null) {
+    //MUUTA TAMA KUN OLET VALMIS
+    const API = "http://127.0.0.1:8000/stuff/api.php";
 
-//MUUTA TAMA KUN OLET VALMIS
-const API = "http://127.0.0.1:8000/stuff/api.php";
-
-async function api(action, data = null) {
     const res = await fetch(`${API}?action=${action}`, {
         method: data ? "POST" : "GET",
         headers: {
@@ -33,6 +34,41 @@ async function api(action, data = null) {
     }
 }
 
+const loadPage = async (page) => {
+    const pth = `./stuff/${page}/${page}.html`;
+    const res = await fetch(pth);
+    const html = await res.text();
+    const container = document.getElementById('toolContainer');
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = html;
+    container.appendChild(wrapper);
+    if (page == 'bidwriter') bidWriter();
+    if (page == 'systemsheet') systemSheet(user, token);
+}
+
+const openPage = (page) => {
+    mainPage.classList.remove('activated');
+    let pe = document.getElementById(page);
+    console.log(page);
+    setTimeout(() => {
+        mainPage.style.display = 'none';
+        pe.style.display = 'block';
+        backButton.style.display = 'block';
+    }, 100);
+    setTimeout(() => {
+        pe.classList.add('activated');
+    }, 200);
+};
+
+const openPageButtons = document.getElementsByClassName('openPageButton');
+for (let opb of openPageButtons) {
+    opb.addEventListener('click', async () => {
+        const page = opb.getAttribute('name');
+        await loadPage(page);
+        openPage(page);
+    });
+}
+
 const toggleSlide = () => {
     if (user) {
         logout();
@@ -45,12 +81,15 @@ const toggleSlide = () => {
     }
 };
 
+authButton.addEventListener('click', () => toggleSlide());
+
 async function logout() {
     const res = await api('logout');
     if (!res.error) {
         user = null;
         welcomeText.innerText = '';
-        loginButton.innerText = 'Kirjaudu';
+        authButton.innerText = 'Kirjaudu';
+        unLoadSystems();
     }
 }
 
@@ -72,19 +111,23 @@ async function signup() {
 }
 
 async function login() {
-    username = document.getElementById('usernameinput').value;
-    password = document.getElementById('passwordinput').value;
+    const username = document.getElementById('usernameinput').value;
+    const password = document.getElementById('passwordinput').value;
     const res = await api('login', { username, password });
     if (!res.error) {
         user = username;
         token = res.token;
         welcomeText.innerText = 'Hei ' + user + '!';
-        loginButton.innerText = 'Kirjaudu ulos';
+        authButton.innerText = 'Kirjaudu ulos';
         document.getElementById('loginslide').classList.remove('open');
+        loadSystems(user, token);
     } else {
         loginMessage.innerText = 'Väärä käyttäjänimi tai salasana.';
     }
 }
+
+loginButton.addEventListener('click', () => login());
+signupButton.addEventListener('click', () => signup());
 
 backButton.onclick = () => {
     const toolPages = document.getElementsByClassName('toolpage');
@@ -99,47 +142,4 @@ backButton.onclick = () => {
             mainPage.classList.add('activated');
         }, 200);
     }
-};
-
-openPage = (page) => {
-    mainPage.classList.remove('activated');
-    const pe = document.getElementById(page);
-    setTimeout(() => {
-        mainPage.style.display = 'none';
-        pe.style.display = 'block';
-        backButton.style.display = 'block';
-    }, 100);
-    setTimeout(() => {
-        pe.classList.add('activated');
-    }, 200);
-};
-
-const loadTool = async (path) => {
-    const res = await fetch(path);
-    const html = await res.text();
-    const container = document.getElementById('toolContainer');
-    const wrapper = document.createElement('div');
-    wrapper.innerHTML = html;
-    container.appendChild(wrapper);
-};
-
-const formatBid = (str) => {
-    let formattedStr = str.toUpperCase();
-    formattedStr = formattedStr.replace(/XX|X|C|D|H|S/g, (match) => {
-        switch (match) {
-            case 'XX':
-                return '<span class="rdbl">XX</span>';
-            case 'X':
-                return '<span class="dbl">X</span>';
-            case 'C':
-                return '<span class="club"> ♣</span>';
-            case 'D':
-                return '<span class="diamond"> ♦</span>';
-            case 'H':
-                return '<span class="heart"> ♥</span>';
-            case 'S':
-                return '<span class="spade"> ♠</span>';
-        }
-    });
-    return formattedStr;
 };

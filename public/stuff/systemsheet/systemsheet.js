@@ -1,10 +1,18 @@
 import { dynamicInputTable } from "../corteztools.js";
+import { api } from "../bridge.js";
 
-export function initSystemSheet() {
+export function systemSheet(user, token) {
     const inputs = document.getElementById('systemSheetInputs');
     const table = dynamicInputTable(3, 'bidsResponsesInputTable', ['Tarjous', 'Merkitys', 'Vastaukset']);
     const system = {};
     const systemMessage = document.getElementById('systemMessage');
+    const sheetManageTitle = document.getElementById('sheetManageTitle');
+
+    if (!user) {
+        sheetManageTitle.innerText = 'Kirjaudu sisään tallentaaksesi systeemejä.';
+    } else {
+        sheetManageTitle.innerText = 'Omat systeemit';
+    }
 
     document.getElementById('sheetBidInputs').appendChild(table.init());
 
@@ -55,10 +63,16 @@ export function initSystemSheet() {
     document.getElementById('saveSystemButton').addEventListener('click', () => {
         saveSystem();
     });
-
-    const test = () => {
-        console.log('work');
-    }
-
-    return { test };
 } 
+
+export async function loadSystems(user, token) {
+    const res = await api('loadsystem', { token });
+    console.log('res: ', res);
+    const sheetManageTitle = document.getElementById('sheetManageTitle');
+    if (sheetManageTitle) sheetManageTitle.innerText = 'Omat systeemit';
+}
+
+export async function unLoadSystems() {
+    const sheetManageTitle = document.getElementById('sheetManageTitle');
+    if (sheetManageTitle) sheetManageTitle.innerText = 'Kirjaudu sisään tallentaaksesi systeemejä.';
+}

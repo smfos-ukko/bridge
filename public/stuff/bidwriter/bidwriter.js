@@ -1,8 +1,29 @@
-export function initBidWriter() {
+export function bidWriter() {
     const bwDealerButtons = document.getElementsByClassName('bwdealer');
     const bwVulButtons = document.getElementsByClassName('bwvul');
     let bwDealer = 'N';
     let bwVul = 'Ei kukaan';
+
+    const formatBid = (str) => {
+        let formattedStr = str.toUpperCase();
+        formattedStr = formattedStr.replace(/XX|X|C|D|H|S/g, (match) => {
+            switch (match) {
+                case 'XX':
+                    return '<span class="rdbl">XX</span>';
+                case 'X':
+                    return '<span class="dbl">X</span>';
+                case 'C':
+                    return '<span class="club"> ♣</span>';
+                case 'D':
+                    return '<span class="diamond"> ♦</span>';
+                case 'H':
+                    return '<span class="heart"> ♥</span>';
+                case 'S':
+                    return '<span class="spade"> ♠</span>';
+            }
+        });
+        return formattedStr;
+    };
 
     for (let bwdb of bwDealerButtons) {
         bwdb.onclick = () => {
@@ -247,5 +268,4 @@ export function initBidWriter() {
             bwWriting();
         }
     });
-
 }

@@ -22,7 +22,7 @@
         <div class="flexing align-baseline">
             <h3 id="welcometext"></h3>
             <button id="backbutton" class="mainbutton">Etusivulle</button>
-            <button id="loginbutton" class="mainbutton altbutton" onclick="toggleSlide()">Kirjaudu</button>
+            <button id="authbutton" class="mainbutton altbutton">Kirjaudu</button>
         </div>
     </div>
     <div id="loginslide" class="slidedown">
@@ -36,32 +36,20 @@
                 </div>
                 <div id="loginbuttoncontainer">
                     <div>
-                        <button id="signupbutton" class="mainbutton" onclick="signup()">Rekisteröidy</button>
-                        <button id="loginbutton" class="mainbutton altbutton" onclick="login()">Kirjaudu</button>
+                        <button id="signupbutton" class="mainbutton">Rekisteröidy</button>
+                        <button id="loginbutton" class="mainbutton altbutton">Kirjaudu</button>
                     </div>
                     <span id="loginmessage"></span>
                 </div>
             </div>
         </div>
         <div id="mainpage" class="subpage activated">
-            <button class="mainbutton" onclick="openPage('bidwriter')">Tarjouspiirtäjä</button>
-            <button class="mainbutton" onclick="openPage('systemsheet')">Systeemiprintteri</button>
+            <button class="mainbutton openPageButton" name="bidwriter">Tarjouspiirtäjä</button>
+            <button class="mainbutton openPageButton" name="systemsheet">Systeemiprintteri</button>
         </div>
         <div id="toolContainer"></div>
     </div>
-    <script src="stuff/bridge.js"></script>
-    <script type="module">
-        import { initBidWriter } from './stuff/bidwriter/bidwriter.js';
-        loadTool('./stuff/bidwriter/bidwriter.html').then(() => {
-            initBidWriter();
-        });
-    </script>
-    <script type="module">
-        import { initSystemSheet } from './stuff/systemsheet/systemsheet.js';
-        loadTool('./stuff/systemsheet/systemsheet.html').then(() => {
-            initSystemSheet();
-        });
-    </script>
+    <script type="module" src="stuff/bridge.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
         integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
