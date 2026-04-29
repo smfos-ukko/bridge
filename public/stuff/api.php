@@ -106,25 +106,37 @@ switch ($action) {
 
             checkAuth();
 
-            $stmt = $db->prepare("
-                INSERT INTO systems (user_id, name, data, created_at, updated_at)
-                VALUES (?, ?, ?, datetime('now'), datetime('now'))
-            ");
+            $stmt = $db->prepare("SELECT * FROM systems WHERE user_id = ? AND name = ?");
+            $stmt->execute([$_SESSION['user_id'], $input['name']]);
+            $system = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            $stmt->execute([
-                $_SESSION['user_id'],
-                $input['name'],
-                json_encode($input['data'])
-            ]);
+            if ($system) {
+                $stmt = $db->prepare("
+                    UPDATE systems 
+                    SET 
+                        data = ?,
+                        updated_at = datetime('now')
+                    WHERE user_id = ? AND name = ?
+                ");
+                $stmt->execute([
+                    json_encode($input['data']),
+                    $_SESSION['user_id'],
+                    $input['name']
+                ]);
 
-            jsonResponse(['status' => 'ok']);
-            break;
-
-        case 'updatesystem':
-            $input = json_decode(file_get_contents('php://input'), true);
-
-            checkAuth();
-
+                jsonResponse(['status' => 'updated']);
+            } else {
+                $stmt = $db->prepare("
+                    INSERT INTO systems (user_id, name, data, created_at, updated_at)
+                    VALUES (?, ?, ?, datetime('now'), datetime('now'))
+                ");
+                $stmt->execute([
+                    $_SESSION['user_id'],
+                    $input['name'],
+                    json_encode($input['data'])
+                ]);
+                jsonResponse(['status' => 'saved']);
+            }
             break;
 
         case 'loadsystem':

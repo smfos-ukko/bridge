@@ -55,4 +55,10 @@ export function initSystemSheet() {
     document.getElementById('saveSystemButton').addEventListener('click', () => {
         saveSystem();
     });
+
+    const test = () => {
+        console.log('work');
+    }
+
+    return { test };
 } 

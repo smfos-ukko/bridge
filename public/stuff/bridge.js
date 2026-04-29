@@ -1,3 +1,5 @@
+import { test } from "../systemsheet/systemsheet.js";
+
 const mainPage = document.getElementById('mainpage');
 const loginPanel = document.getElementById('loginslide');
 const backButton = document.getElementById('backbutton');
@@ -6,6 +8,8 @@ const loginMessage = document.getElementById('loginmessage');
 const welcomeText = document.getElementById('welcometext');
 let user = null;
 let token = null;
+
+test();
 
 //MUUTA TAMA KUN OLET VALMIS
 const API = "http://127.0.0.1:8000/stuff/api.php";
