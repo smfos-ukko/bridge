@@ -49,7 +49,6 @@ const loadPage = async (page) => {
 const openPage = (page) => {
     mainPage.classList.remove('activated');
     let pe = document.getElementById(page);
-    console.log(page);
     setTimeout(() => {
         mainPage.style.display = 'none';
         pe.style.display = 'block';
@@ -87,6 +86,7 @@ async function logout() {
     const res = await api('logout');
     if (!res.error) {
         user = null;
+        token = null;
         welcomeText.innerText = '';
         authButton.innerText = 'Kirjaudu';
         unLoadSystems();
@@ -111,19 +111,23 @@ async function signup() {
 }
 
 async function login() {
-    const username = document.getElementById('usernameinput').value;
-    const password = document.getElementById('passwordinput').value;
-    const res = await api('login', { username, password });
-    if (!res.error) {
-        user = username;
-        token = res.token;
-        welcomeText.innerText = 'Hei ' + user + '!';
-        authButton.innerText = 'Kirjaudu ulos';
-        document.getElementById('loginslide').classList.remove('open');
-        loadSystems(user, token);
-    } else {
-        loginMessage.innerText = 'Väärä käyttäjänimi tai salasana.';
-    }
+    if (!user) {
+        const username = document.getElementById('usernameinput').value;
+        const password = document.getElementById('passwordinput').value;
+        const res = await api('login', { username, password });
+        if (!res.error) {
+            user = username;
+            token = res.token;
+            welcomeText.innerText = 'Hei ' + user + '!';
+            authButton.innerText = 'Kirjaudu ulos';
+            document.getElementById('loginslide').classList.remove('open');
+            loadSystems(user, token);
+        } else {
+            loginMessage.innerText = 'Väärä käyttäjänimi tai salasana.';
+        }
+    } 
+    welcomeText.innerText = 'Hei ' + user + '!';
+    authButton.innerText = 'Kirjaudu ulos';
 }
 
 loginButton.addEventListener('click', () => login());
@@ -143,3 +147,5 @@ backButton.onclick = () => {
         }, 200);
     }
 };
+
+login();
