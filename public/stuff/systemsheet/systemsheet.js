@@ -15,8 +15,8 @@ const fitText = (els, isH = true, percent = 1) => {
     const container = document.getElementById('a5left');
 
     const max = isH
-        ? container.clientHeight * percent
-        : container.clientWidth * percent;
+        ? container.clientHeight * percent - 30
+        : container.clientWidth * percent - 30;
 
     const elements = els instanceof NodeList ? [...els] : [els];
 
@@ -54,6 +54,16 @@ const drawPrint = () => {
     
     document.querySelectorAll('.pdPlayer h2').forEach((f) => { f.fontSize = fontSizes.h2 });
 
+    let pdTableRows = '';
+
+    const pdTab = document.getElementById('bidsResponsesInputTable');
+    const pdEls = pdTab.querySelectorAll('input');
+    for (let el of pdEls) {
+        if (parseInt(el.dataset.colIndex) == 0) pdTableRows += '<tr>';
+        pdTableRows += '<td>' + el.value.trim() + '</td>';
+        if (parseInt(el.dataset.colIndex) == 2) pdTableRows += '</tr>';
+    }
+
     let pd = `
         <div class="pdHeader">
             <div class="pdPlayer pdLeft">
@@ -68,10 +78,33 @@ const drawPrint = () => {
                 <h2 class="pdHeaderText">${getI('sheetMateNumberp2')}</h2>
             </div>
         </div>
+        <div class="pdTableContainer">
+            <table class="pdTable">
+                <tbody>
+                    <tr>
+                        <th><h3>Avaustarjous</h3></th>
+                        <th><h3>Merkitys</h3></th>
+                        <th><h3>Vastaukset</h3></th>
+                    </tr>
+                    ${pdTableRows}
+                </tbody>
+            </table>
+        </div>
     `;
 
     a5left.innerHTML = pd;
     a5right.innerHTML = pd;
+
+    const emptyingRows = document.querySelectorAll('.pdTable tr');
+
+    emptyingRows.forEach(eRow => {
+        const tds = eRow.querySelectorAll('td');
+        if (tds.length == 0) return;
+
+        const allEmpty = [...tds].every(td => td.textContent.trim() === '');
+
+        if (allEmpty) eRow.remove();
+    });
 
     fitText(document.querySelectorAll('.pdHeaderText'), false, 0.33);
 };

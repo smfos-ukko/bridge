@@ -33,13 +33,15 @@
 }
 
 .a5sized {
+    flex-direction: column;
+    align-items: center;
     width: 50%;
     height: 100%;
     box-sizing: border-box;
     overflow: hidden;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    justify-content: start;
+    padding: 25px 15px;
 }
 
 .a5sized * {
@@ -80,6 +82,29 @@
 
 .pdPlayer {
     flex-direction: column
+}
+
+.pdTableContainer {
+    width: 100%;
+}
+
+.pdTableContainer * {
+    display: revert;
+}
+
+.pdTableContainer td {
+    border-top: 1px solid rgb(109, 109, 109);
+    border-left: 1px solid rgb(109, 109, 109);
+    border-collapse: collapse;
+    padding: 0 5px;
+}
+
+.pdTableContainer td:first-of-type {
+    border-left: none;
+}
+
+.pdTableContainer tr:nth-of-type(2)>td {
+    border-top: none;
 }
 
 @media print {
