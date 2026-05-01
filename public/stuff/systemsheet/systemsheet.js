@@ -12,35 +12,39 @@ const getI = (id) => {
 };
 
 const fitText = (els, isH = true, percent = 1) => {
-    let max;
-    if (!isH) max = document.getElementById('a5left').clientWidth * percent;
-    if (isH) max = document.getElementById('a5left').clientHeight * percent;
-    if (els instanceof NodeList) {
-        let overFlow = true;
-        while (overFlow) {
-            overFlow = false;
-            console.log(els);
-            for (let el of els) {
-                let fontSize = parseFloat(getComputedStyle(el).fontSize);
-                                    console.log('scrollH ', el.scrollHeight, ' max ', max, ' fonts ', fontSize);
+    const container = document.getElementById('a5left');
 
-                if (isH ? el.scrollHeight : el.scrollWidth > max && fontSize > 10) {
-                    overFlow = true;
-                    console.log('overflow');
-                }
-                for (let elx of els) {
-                    let fontS = parseFloat(getComputedStyle(elx).fontSize) - 1;
-                    elx.style.fontSize = fontS + 'px'; 
-                }
-            }
+    const max = isH
+        ? container.clientHeight * percent
+        : container.clientWidth * percent;
+
+    const elements = els instanceof NodeList ? [...els] : [els];
+
+    let baseSizes = elements.map (el =>
+        parseFloat(getComputedStyle(el).fontSize)
+    );
+
+    let scale = 1;
+    let step = 0.98;
+    let fits = false;
+
+    while (!fits && scale > 0.2) {
+        fits = true;
+
+        for (let i = 0; i < elements.length; i++) {
+            const el = elements[i];
+
+            const newSize = baseSizes[i] * scale;
+            el.style.fontSize = newSize + 'px';
+
+            const overflow = isH 
+                ? el.scrollHeight > max
+                : el.scrollWidth > max;
+
+            if (overflow) fits = false;
         }
-        return;
-    }
-    
-    let fontSize = parseFloat(getComputedStyle(els).fontSize);
-    while (isH ? els.scrollHeight : els.scrollWidth > max && fontSize > 10) {
-        fontSize -= 1;
-        els.style.fontSize = fontSize + 'px';
+
+        if (!fits) scale *= step;
     }
 };
 
@@ -52,14 +56,14 @@ const drawPrint = () => {
 
     let pd = `
         <div class="pdHeader">
-            <div class="pdPlayer">
+            <div class="pdPlayer pdLeft">
                 <h2 class="pdHeaderText">${getI('sheetp1')}</h2>
                 <h2 class="pdHeaderText">${getI('sheetMateNumberp1')}</h2>
             </div>
             <div>
                 <h1 class="pdHeaderText">${getI('sheetBaseSystem')}</h1>
             </div>
-            <div class="pdPlayer">
+            <div class="pdPlayer pdRight">
                 <h2 class="pdHeaderText">${getI('sheetp2')}</h2>
                 <h2 class="pdHeaderText">${getI('sheetMateNumberp2')}</h2>
             </div>
@@ -87,7 +91,6 @@ const plantSystem = (s) => {
         const inputId = i.getAttribute('id');
     
         if (inputId) {
-            console.log(sys);
             i.value = sys.fields?.[inputId] ?? '';
             continue;
         }
