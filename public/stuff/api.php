@@ -90,6 +90,8 @@ switch ($action) {
         if ($user && password_verify($input['password'], $user['password_hash'])) {
             session_regenerate_id(true);
             $_SESSION['user_id'] = $user['id'];
+            $_SESSION['token'] = $user['token'];
+            $_SESSION['username'] = $user['username'];
             jsonResponse(['status' => 'ok', 'token' => $user['token']]);
         } else {
             jsonResponse(['error' => 'invalid'], 401);
@@ -99,6 +101,21 @@ switch ($action) {
         case 'logout':
             session_destroy();
             jsonResponse(['status' => 'ok']);
+            break;
+
+        case 'checksession':
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+
+            if (isset($_SESSION['user_id'])) {
+                jsonResponse([
+                    'user' => $_SESSION['username'],
+                    'token' => $_SESSION['token']
+                ]);
+            } else {
+                jsonResponse(['user' => null]);
+            }
             break;
 
         case 'savesystem':

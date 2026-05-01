@@ -34,6 +34,24 @@ export async function api(action, data = null) {
     }
 }
 
+async function checkSession() {
+    const res = await api('checksession');
+
+    if (res.user) {
+        user = res.user;
+        token = res.token;
+        welcomeText.innerText = 'Hei ' + user + '!';
+        authButton.innerText = 'Kirjaudu ulos';
+        loadSystems(user, token);
+    } else {
+        welcomeText.innerText = '';
+        authButton.innerText = 'Kirjaudu';
+    }
+}
+if (!user) {
+    checkSession();
+}
+
 const loadPage = async (page) => {
     const pth = `./stuff/${page}/${page}.html`;
     const res = await fetch(pth);
@@ -148,4 +166,4 @@ backButton.onclick = () => {
     }
 };
 
-login();
+//login();

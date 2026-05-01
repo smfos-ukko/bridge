@@ -6,6 +6,7 @@ export const dynamicInputTable = (rows, id, headers = null) => {
     table.id = id;
 
     const updateTableRows = (e) => {
+        console.log("ran");
         if (e.target.dataset.rowIndex == numberOfRows - 1) {
             addRow();
             return;

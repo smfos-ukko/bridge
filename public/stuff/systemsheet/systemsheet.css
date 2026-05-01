@@ -2,30 +2,6 @@
     margin-top: 15px;
 }
 
-.a4sheet {
-    width: 210mm;
-    height: 297mm;
-    display: flex;
-    border: 1px solid #ccc;
-}
-
-.a5sized {
-    width: 50%;
-    height: 100%;
-    box-sizing: border-box;
-    padding: 10mm;
-    border-right: 1px dashed #aaa;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.sheetContent {
-    text-align: center;
-    width: 100%;
-}
-
 #sheetOperations {
     display: flex;
 }
@@ -38,7 +14,67 @@
     padding: 10px;
 }
 
+.a4sheet {
+    height: 210mm;
+    width: 297mm;
+    margin-top: 20px;
+    background-color: white;
+    color: black;
+}
+
+#a5left {
+    border-right: 1px dashed #aaa;
+    background-color: rgb(131, 176, 215);
+}
+
+#a5right {
+    border-right: 1px dashed #aaa;
+    background-color: rgb(131, 215, 191);
+}
+
+.a5sized {
+    width: 50%;
+    height: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.a5sized * {
+    display: flex;
+}
+
+.sheetContent {
+    text-align: center;
+    width: 100%;
+}
+
+.pdHeader {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+    width: 100%;
+}
+
+.pdHeader h1,
+.pdHeader h2 {
+    white-space: nowrap;
+}
+
+.pdPlayer {
+    flex-direction: column;
+    align-items: center;
+}
+
 @media print {
+    @page {
+        margin: 5mm;
+        size: A4 landscape;
+    }
+
     body * {
         visibility: hidden;
     }
@@ -46,19 +82,25 @@
     .a4sheet,
     .a4sheet * {
         visibility: visible;
+        display: flex;
     }
 
     .a4sheet {
         position: absolute;
+        transform: translateY(-170px);
         left: 0;
         top: 0;
         border: none;
-        flex-direction: column;
+        margin-top: 0;
+        margin-bottom: 0;
+        page-break-after: avoid;
+        page-break-before: avoid;
+        break-inside: avoid;
     }
 
     .a5sized {
-        width: 100%;
-        height: 148.5mm;
+        width: 50%;
+        height: 100%;
     }
 }
 
