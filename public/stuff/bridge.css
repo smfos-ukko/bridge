@@ -146,6 +146,12 @@ button:active {
     display: none;
 }
 
+input {
+    min-height: 30px;
+    margin: 2px;
+    padding: 0 5px;
+}
+
 @media (max-width: 630px) {
     .banner {
         display: flex;

@@ -11,11 +11,13 @@ const getI = (id) => {
     return document.getElementById(id).value;
 };
 
-const fitText = (els, isH = true, percent = 1) => {
+const fitText = (els, isH = true, percent = 1, doc = false) => {
     const container = document.getElementById('a5left');
+    const hContainer = container.querySelector('.pdHeightContainer');
+    const tContainerHeight = container.querySelector('.pdHeader').clientHeight;
 
     const max = isH
-        ? container.clientHeight * percent - 30
+        ? container.clientHeight * percent - 50 - tContainerHeight
         : container.clientWidth * percent - 30;
 
     const elements = els instanceof NodeList ? [...els] : [els];
@@ -23,6 +25,8 @@ const fitText = (els, isH = true, percent = 1) => {
     let baseSizes = elements.map (el =>
         parseFloat(getComputedStyle(el).fontSize)
     );
+
+    if (doc) console.log('max: ', max, ' els: ', els, ' basesizes: ', baseSizes);
 
     let scale = 1;
     let step = 0.98;
@@ -38,13 +42,15 @@ const fitText = (els, isH = true, percent = 1) => {
             el.style.fontSize = newSize + 'px';
 
             const overflow = isH 
-                ? el.scrollHeight > max
+                ? hContainer.clientHeight > max
                 : el.scrollWidth > max;
 
             if (overflow) fits = false;
         }
 
         if (!fits) scale *= step;
+        if (doc) console.log('scale: ', scale, ' step: ', step, ' fits: ', fits);
+        if (doc) console.log('height client: ', hContainer.clientHeight, ' h scroll: ', hContainer.scrollHeight);
     }
 };
 
@@ -78,17 +84,27 @@ const drawPrint = () => {
                 <h2 class="pdHeaderText">${getI('sheetMateNumberp2')}</h2>
             </div>
         </div>
-        <div class="pdTableContainer">
-            <table class="pdTable">
-                <tbody>
-                    <tr>
-                        <th><h3>Avaustarjous</h3></th>
-                        <th><h3>Merkitys</h3></th>
-                        <th><h3>Vastaukset</h3></th>
-                    </tr>
-                    ${pdTableRows}
-                </tbody>
-            </table>
+        <div class="pdHeightContainer">
+            <div class="pdTableContainer">
+                <table class="pdTable">
+                    <tbody>
+                        <tr>
+                            <th><h3>Avaustarjous</h3></th>
+                            <th><h3>Merkitys</h3></th>
+                            <th><h3>Vastaukset</h3></th>
+                        </tr>
+                        ${pdTableRows}
+                    </tbody>
+                </table>
+            </div>
+            <div class="pdTextareasContainer">
+                <h3>Lähdöt</h3>
+                <p class="pdLeads">${document.getElementById('sheetLeadInput').value}</p>
+                <h3>Merkinannot</h3>
+                <p class="pdSingals">${document.getElementById('sheetSignalInput').value}</p>
+                <h3>Konventiot</h3>
+                <p class="pdConvention">${document.getElementById('sheetConventionInput').value}</p>
+            </div>
         </div>
     `;
 
@@ -107,6 +123,11 @@ const drawPrint = () => {
     });
 
     fitText(document.querySelectorAll('.pdHeaderText'), false, 0.33);
+    fitText(document.querySelectorAll(`
+        .pdTextareasContainer p, 
+        .pdTextareasContainer h3, 
+        .pdTableContainer td
+    `), true, 1, true);
 };
 
 const plantSystem = (s) => {
