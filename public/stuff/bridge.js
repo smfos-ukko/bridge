@@ -14,8 +14,7 @@ let user = null;
 let token = null;
 
 export async function api(action, data = null) {
-    //MUUTA TAMA KUN OLET VALMIS
-    const API = "http://127.0.0.1:8000/stuff/api.php";
+    const API = window.location.origin + "/stuff/api.php";
 
     const res = await fetch(`${API}?action=${action}`, {
         method: data ? "POST" : "GET",
