@@ -14,7 +14,8 @@ let user = null;
 let token = null;
 
 export async function api(action, data = null) {
-    const API = window.location.origin + "/public/stuff/api.php";
+    const API = window.location.origin + "/bridge/public/stuff/api.php";
+    console.log(API);
 
     const res = await fetch(`${API}?action=${action}`, {
         method: data ? "POST" : "GET",
