@@ -1,0 +1,3 @@
+RewriteEngine On
+
+RewriteRule ^bridge/?$ /bridge/public/index.html [L]
