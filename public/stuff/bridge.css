@@ -159,6 +159,14 @@ input {
         align-items: center;
     }
 
+    .banner>div {
+        align-items: center;
+    }
+
+    #mainpage button {
+        width: 100%;
+    }
+
     h1 {
         font-size: x-large;
     }

@@ -1,29 +1,39 @@
 <div id="systemsheet" class="subpage toolpage">
     <div id="sheetOptions">
-        <input type="text" id="systemName">
-        <button id="saveSystemButton">Tallenna</button>
-        <button id="emptySheetButton">Tyhjennä</button>
-        <button id="deleteSheetButton">Poista</button>
-        <span id="systemMessage"></span>
+        <div id="sheetManageSystems">
+            <h3 id="sheetManageTitle">Kirjaudu sisään tallentaaksesi systeemejä.</h3>
+        </div>
+        <div id="sheetOptLeft">
+            <div id="systemNameDiv">
+                <h3>Systeemin nimi</h3>
+                <input type="text" id="systemName">
+            </div>
+            <div id="sheetLB">
+                <button id="saveSystemButton">Tallenna</button>
+                <button id="emptySheetButton">Tyhjennä</button>
+                <button id="deleteSheetButton">Poista</button>
+                <span id="systemMessage"></span>
+            </div>
+        </div>
     </div>
     <div id="sheetOperations">
         <div id="systemSheetInputs">
             <div class="flexing">
                 <div>
-                    <h3>Pelaaja</h3>
-                    <input type="text" id="sheetp1">
+                    <h3>Pelaaja 1</h3>
+                    <input type="text" id="sheetp1" class="sheetUpperInputs">
                     <h3>Matenumero</h3>
-                    <input type="text" id="sheetMateNumberp1">
+                    <input type="text" id="sheetMateNumberp1" class="sheetUpperInputs">
                 </div>
                 <div>
-                    <h3>Pelaaja</h3>
-                    <input type="text" id="sheetp2">
+                    <h3>Pelaaja 2</h3>
+                    <input type="text" id="sheetp2" class="sheetUpperInputs">
                     <h3>Matenumero</h3>
-                    <input type="text" id="sheetMateNumberp2">
+                    <input type="text" id="sheetMateNumberp2" class="sheetUpperInputs">
                 </div>
             </div>
             <h3>Perussysteemi</h3>
-            <input type="text" id="sheetBaseSystem">
+            <input type="text" id="sheetBaseSystem" class="sheetUpperInputs">
             <h3>Tarjoukset</h3>
             <div id="sheetBidInputs" class="sheetInputs"></div>
             <h3>Lähdöt</h3>
@@ -38,9 +48,6 @@
             <div class="sheetInputs">
                 <textarea rows="4" cols="50" id="sheetConventionInput"></textarea>
             </div>
-        </div>
-        <div id="sheetManageSystems">
-            <h3 id="sheetManageTitle">Kirjaudu sisään tallentaaksesi systeemejä.</h3>
         </div>
     </div>
 

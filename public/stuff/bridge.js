@@ -55,7 +55,8 @@ if (!user) {
 
 const loadPage = async (page) => {
     if (loadedPages.includes(page)) return;
-    const pth = `./public/stuff/${page}/${page}.html`;
+    let pth = `./public/stuff/${page}/${page}.html`;
+    if (window.location.hostname == '127.0.0.1') pth = `./stuff/${page}/${page}.html`;
     const res = await fetch(pth);
     const html = await res.text();
     const container = document.getElementById('toolContainer');
@@ -144,16 +145,19 @@ async function login() {
             authButton.innerText = 'Kirjaudu ulos';
             document.getElementById('loginslide').classList.remove('open');
             loadSystems(user, token);
+            welcomeText.innerText = 'Hei ' + user + '!';
+            authButton.innerText = 'Kirjaudu ulos';
         } else {
             loginMessage.innerText = 'Väärä käyttäjänimi tai salasana.';
         }
     } 
-    welcomeText.innerText = 'Hei ' + user + '!';
-    authButton.innerText = 'Kirjaudu ulos';
 }
 
 loginButton.addEventListener('click', () => login());
 signupButton.addEventListener('click', () => signup());
+document.getElementById('passwordinput').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') login();
+});
 
 backButton.onclick = () => {
     const toolPages = document.getElementsByClassName('toolpage');
@@ -169,5 +173,3 @@ backButton.onclick = () => {
         }, 200);
     }
 };
-
-//login();
