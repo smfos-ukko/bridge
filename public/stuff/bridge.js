@@ -55,7 +55,7 @@ if (!user) {
 
 const loadPage = async (page) => {
     if (loadedPages.includes(page)) return;
-    const pth = `./stuff/${page}/${page}.html`;
+    const pth = `./public/stuff/${page}/${page}.html`;
     const res = await fetch(pth);
     const html = await res.text();
     const container = document.getElementById('toolContainer');
