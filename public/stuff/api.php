@@ -194,10 +194,10 @@ switch ($action) {
         $stmt = $db->prepare("
             SELECT id, name
             FROM systems
-            WHERE name = ?
+            WHERE user_id = ? AND name = ?
         ");
 
-        $stmt->execute([$input['name']]);
+        $stmt->execute([$_SESSION['user_id']], [$input['name']]);
         $system = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$system) {
