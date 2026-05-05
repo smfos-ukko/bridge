@@ -1,6 +1,0 @@
-RewriteEngine On
-RewriteBase /
-
-RewriteRule ^bridge/?$ /bridge/public/index.html [L]
-
-RewriteRule ^test$ /bridge/public/index.html [L]
