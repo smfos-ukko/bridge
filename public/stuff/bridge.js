@@ -9,6 +9,7 @@ const loginButton = document.getElementById('loginbutton');
 const signupButton = document.getElementById('signupbutton');
 const loginMessage = document.getElementById('loginmessage');
 const welcomeText = document.getElementById('welcometext');
+const loadedPages = [];
 let user = null;
 let token = null;
 
@@ -53,6 +54,7 @@ if (!user) {
 }
 
 const loadPage = async (page) => {
+    if (loadedPages.includes(page)) return;
     const pth = `./stuff/${page}/${page}.html`;
     const res = await fetch(pth);
     const html = await res.text();
@@ -62,6 +64,8 @@ const loadPage = async (page) => {
     container.appendChild(wrapper);
     if (page == 'bidwriter') bidWriter();
     if (page == 'systemsheet') systemSheet(user, token);
+    loadedPages.push(page);
+    console.log(loadedPages);
 }
 
 const openPage = (page) => {

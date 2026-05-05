@@ -127,7 +127,7 @@ const drawPrint = () => {
         .pdTextareasContainer p, 
         .pdTextareasContainer h3, 
         .pdTableContainer td
-    `), true, 1, true);
+    `), true, 1);
 };
 
 const plantSystem = (s) => {
@@ -170,7 +170,8 @@ export async function loadSystems(user, token) {
     const sheetManageSystems = document.getElementById('sheetManageSystems');
     if (!sheetManageSystems) return;
 
-    console.log(res);
+    const previousSystemListButtons = sheetManageSystems.querySelectorAll('.systemListButton');
+    for(let old of previousSystemListButtons) old.remove();
 
     for (let i = 0; i < res.length; i++) {
         const systemListButton = document.createElement('button');
@@ -261,6 +262,22 @@ export function systemSheet(user, token) {
         const res = await api('savesystem', { username: user, name: systemName, token, data: system });
         resetSystems(user, token);
     }
+        
+    async function deleteSystem() {
+        const systemName = document.getElementById('systemName').value;
+
+        if (!user) return;
+
+        const res = await api('deletesystem', { username: user, name: systemName, token });
+        resetSystems(user, token);
+    }
+
+    const emptySystem = () => {
+        const eEls = document.getElementById('systemsheet').querySelectorAll('input, textarea');
+        for (let eEl of eEls) {
+            eEl.value = '';
+        }
+    }
 
     document.getElementById('systemsheet').addEventListener('input', (e) => {
         if (e.target.matches('input, textarea')) {
@@ -270,6 +287,14 @@ export function systemSheet(user, token) {
 
     document.getElementById('saveSystemButton').addEventListener('click', () => {
         saveSystem();
+    });
+
+    document.getElementById('emptySheetButton').addEventListener('click', () => {
+        emptySystem();
+    });
+
+    document.getElementById('deleteSheetButton').addEventListener('click', () => {
+        deleteSystem();
     });
 
     if (user && token) loadSystems(user, token);
