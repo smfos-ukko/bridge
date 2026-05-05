@@ -1,6 +1,14 @@
 <?php
 
-header("Access-Control-Allow-Origin: http://127.0.0.1:5500");
+$allowedOrigins = [
+    'http://127.0.0.1:8000',
+    'https://crazypiikkis.fi'
+];
+
+if (isset($_SERVER['HTTP_ORIGIN']) && in_array($_SERVER['HTTP_ORIGIN'], $allowedOrigins)) {
+    header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
+}
+
 header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
