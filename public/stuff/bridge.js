@@ -36,8 +36,8 @@ async function checkSession() {
     const res = await api('checksession');
 
     if (res.user) {
-        sessionStorage.setItem = ('user', res.user);
-        sessionStorage.setItem = ('token', res.token);
+        sessionStorage.setItem('user', res.user);
+        sessionStorage.setItem('token', res.token);
         welcomeText.innerText = 'Hei ' + res.user + '!';
         authButton.innerText = 'Kirjaudu ulos';
         loadSystems(res.user, res.token);
