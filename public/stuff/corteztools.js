@@ -1,4 +1,4 @@
-export const dynamicInputTable = (rows, id, headers = null) => {
+export const dynamicInputTable = (rows, id, headers = null, enableArrowMovement = true) => {
 
     let numberOfRows = 0;
     
@@ -29,58 +29,60 @@ export const dynamicInputTable = (rows, id, headers = null) => {
         updateTableRows(e);
     });
 
-    table.addEventListener('keydown', (e) => {
-        const key = e.key;
-        if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) return;
+    if (enableArrowMovement) {
+        table.addEventListener('keydown', (e) => {
+            const key = e.key;
+            if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) return;
 
-        const current = e.target;
-        if (!current.matches('input')) return;
+            const current = e.target;
+            if (!current.matches('input')) return;
 
-        const currentRow = parseInt(current.getAttribute('data-row-index'));
-        const currentCol = parseInt(current.getAttribute('data-col-index'));
-        let target;
+            const currentRow = parseInt(current.getAttribute('data-row-index'));
+            const currentCol = parseInt(current.getAttribute('data-col-index'));
+            let target;
 
-        if (key == 'ArrowRight') {
-            target = table.querySelector(
-                '[data-row-index="' +
-                    currentRow +
-                    '"][data-col-index="' +
-                    (currentCol + 1) +
-                    '"]'
-            );
-        }
-        if (key == 'ArrowLeft') {
-            target = table.querySelector(
-                '[data-row-index="' +
-                    currentRow +
-                    '"][data-col-index="' +
-                    (currentCol - 1) +
-                    '"]'
-            );
-        }
-        if (key == 'ArrowUp') {
-            target = table.querySelector(
-                '[data-row-index="' +
-                    (currentRow - 1) +
-                    '"][data-col-index="' +
-                    currentCol +
-                    '"]'
-            );
-        }
-        if (key == 'ArrowDown') {
-            target = table.querySelector(
-                '[data-row-index="' +
-                    (currentRow + 1) +
-                    '"][data-col-index="' +
-                    currentCol +
-                    '"]'
-            );
-        }
-        if (target && !target.disabled) {
-            target.focus();
-            e.preventDefault();
-        }
-    });
+            if (key == 'ArrowRight') {
+                target = table.querySelector(
+                    '[data-row-index="' +
+                        currentRow +
+                        '"][data-col-index="' +
+                        (currentCol + 1) +
+                        '"]'
+                );
+            }
+            if (key == 'ArrowLeft') {
+                target = table.querySelector(
+                    '[data-row-index="' +
+                        currentRow +
+                        '"][data-col-index="' +
+                        (currentCol - 1) +
+                        '"]'
+                );
+            }
+            if (key == 'ArrowUp') {
+                target = table.querySelector(
+                    '[data-row-index="' +
+                        (currentRow - 1) +
+                        '"][data-col-index="' +
+                        currentCol +
+                        '"]'
+                );
+            }
+            if (key == 'ArrowDown') {
+                target = table.querySelector(
+                    '[data-row-index="' +
+                        (currentRow + 1) +
+                        '"][data-col-index="' +
+                        currentCol +
+                        '"]'
+                );
+            }
+            if (target && !target.disabled) {
+                target.focus();
+                e.preventDefault();
+            }
+        });
+    }
 
     const tbody = document.createElement('tbody');
     table.appendChild(tbody);

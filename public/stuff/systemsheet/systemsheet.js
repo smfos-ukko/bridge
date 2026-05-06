@@ -201,7 +201,7 @@ export async function unLoadSystems() {
 
 export function systemSheet(user, token) {
     const inputs = document.getElementById('systemSheetInputs');
-    table = dynamicInputTable(3, 'bidsResponsesInputTable', ['Tarjous', 'Merkitys', 'Vastaukset']);
+    table = dynamicInputTable(3, 'bidsResponsesInputTable', ['Tarjous', 'Merkitys', 'Vastaukset'], false);
     const system = {
         grid: {},
         fields: {}
