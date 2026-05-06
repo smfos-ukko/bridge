@@ -305,5 +305,28 @@ export function systemSheet() {
         deleteSystem();
     });
 
+    document.getElementById('printSystemButton').addEventListener('click', () => {
+        const righta5 = document.getElementById('a5right');
+        righta5.style.display = 'flex';
+        window.print();
+        righta5.style.display = 'none';
+    });
+
+    document.getElementById('captureSystemButton').addEventListener('click', () => {
+        const sheetClip = document.getElementsByClassName('a4sheet')[0];
+        const righta5 = document.getElementById('a5right');
+        sheetClip.style.visibility = 'visible';
+        righta5.style.display = 'flex';
+
+        html2canvas(sheetClip).then((canvas) => {
+            sheetClip.style.visibility = 'hidden';
+            righta5.style.display = 'none';
+            const link = document.createElement('a');
+            link.download = 'systemsheet.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+    });
+
     if (user && token) loadSystems(user, token);
 } 

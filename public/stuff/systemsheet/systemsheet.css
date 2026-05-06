@@ -14,11 +14,17 @@
 
 #sheetLB {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
 }
 
-#sheetLB button {
-    width: 30%;
+#sheetUB,
+#sheetDB {
+    display: flex;
+}
+
+#sheetUB button,
+#sheetDB button {
+    width: stretch;
 }
 
 #sheetOperations {
@@ -66,12 +72,12 @@
 
 #a5left {
     border-right: 1px dashed #aaa;
-    background-color: rgb(131, 176, 215);
+    background-color: rgb(255, 255, 255);
 }
 
 #a5right {
     border-right: 1px dashed #aaa;
-    background-color: rgb(131, 215, 191);
+    background-color: rgb(255, 255, 255);
     display: none;
 }
 
