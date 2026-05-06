@@ -1,5 +1,6 @@
 import { dynamicInputTable } from "../corteztools.js";
 import { api } from "../bridge.js";
+import { showMessage } from "../bridge.js";
 
 let systems = [];
 let table;
@@ -206,7 +207,6 @@ export function systemSheet(user, token) {
         grid: {},
         fields: {}
     };
-    const systemMessage = document.getElementById('systemMessage');
     const sheetManageTitle = document.getElementById('sheetManageTitle');
 
     inputs.addEventListener('input', (e) => {
@@ -249,17 +249,15 @@ export function systemSheet(user, token) {
         const systemName = document.getElementById('systemName').value;
 
         if (!user) {
-            systemMessage.innerText = 'Kirjaudu sisään tallentaaksesi systeemin.'
-            console.log(user, token);
+            showMessage('Kirjaudu sisään tallentaaksesi systeemin.');
             return;
         }
 
         if (!systemName) {
-            systemMessage.innerText = 'Anna systeemin nimi.';
+            showMessage('Anna systeemin nimi.');
             return;
         }
 
-        systemMessage.innerText = '';
         const res = await api('savesystem', { username: user, name: systemName, token, data: system });
         resetSystems(user, token);
     }

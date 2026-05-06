@@ -10,8 +10,6 @@ const signupButton = document.getElementById('signupbutton');
 const loginMessage = document.getElementById('loginmessage');
 const welcomeText = document.getElementById('welcometext');
 const loadedPages = [];
-let user = null;
-let token = null;
 
 export async function api(action, data = null) {
     const API = window.location.origin + "/bridge/public/stuff/api.php";
@@ -172,4 +170,15 @@ backButton.onclick = () => {
             mainPage.classList.add('activated');
         }, 200);
     }
+};
+
+export const showMessage = (message, duration = 2000) => {
+    const mDiv = document.getElementById('generalMessage');
+    mDiv.textContent = message;
+    mDiv.classList.add('show');
+
+    setTimeout(() => {
+        mDiv.classList.remove('show');
+        mDiv.textContent = '';
+    }, duration);
 };

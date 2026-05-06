@@ -50,6 +50,24 @@ h3 {
     transform: translateY(0);
 }
 
+#generalMessage {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #d8fd22;
+    color: black;
+    padding: 15px 20px;
+    border-radius: 6px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+#generalMessage.show {
+    opacity: 1;
+}
+
 #loginpanel {
     background-color: var(--background-alt);
     height: 170px;
