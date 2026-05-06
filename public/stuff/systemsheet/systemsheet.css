@@ -191,10 +191,12 @@
         max-width: 90px;
     }
 
+    /*
     .a4sheet,
     .a4sheet * {
         visibility: hidden;
     }
+    */
 
 }
 
