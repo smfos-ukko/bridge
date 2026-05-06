@@ -250,6 +250,7 @@ export function systemSheet(user, token) {
 
         if (!user) {
             systemMessage.innerText = 'Kirjaudu sisään tallentaaksesi systeemin.'
+            console.log(user, token);
             return;
         }
 

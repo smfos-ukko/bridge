@@ -84,7 +84,6 @@ switch ($action) {
             $stmt->execute([$input['username'], $hash, $token]);
             jsonResponse(['status' => 'ok']);
         } catch (PDOException $e) {
-            echo $e;
             jsonResponse(['error'=> 'username taken'], 400);
         }
         break;
