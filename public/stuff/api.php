@@ -82,6 +82,18 @@ switch ($action) {
         try {
             $stmt = $db->prepare("INSERT INTO users (username, password_hash, token) VALUES (?, ?, ?)");
             $stmt->execute([$input['username'], $hash, $token]);
+
+            $json = file_get_contents('systemsheet/examplesystem.json');
+            $stmt = $db->prepare("
+                INSERT INTO systems (user_id, name, data, created_at, updated_at)
+                VALUES (?, ?, ?, datetime('now'), datetime('now'))
+            ");
+            $stmt->execute([
+                $db->lastInsertId(),
+                'Esimerkki',
+                $json
+            ]);
+
             jsonResponse(['status' => 'ok']);
         } catch (PDOException $e) {
             jsonResponse(['error'=> 'username taken'], 400);

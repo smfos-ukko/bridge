@@ -1,0 +1,74 @@
+{
+    "grid": {
+        "1": [
+            "1c",
+            "2+k, 12-21p",
+            "k\u00e4\u00e4nnetyt korotukset, hyppy toisessa alav\u00e4riss\u00e4 = 6-9p & tuki"
+        ],
+        "2": [
+            "1d",
+            "4+k, 12-21p",
+            "k\u00e4\u00e4nnetyt korotukset, hyppy toisessa alav\u00e4riss\u00e4 = 6-9p & tuki"
+        ],
+        "3": [
+            "1h",
+            "5+k, 12-21p",
+            "Skrot"
+        ],
+        "4": [
+            "1s",
+            "5+k, 12-21p",
+            "Skrot"
+        ],
+        "5": [
+            "1nt",
+            "15-17p",
+            "Stayman, siirrot, Smolen, Garbage, Puppet, 3d = 5-5 yl\u00e4v\u00e4rit, 3M = 3kM, 5koM"
+        ],
+        "6": [
+            "2c",
+            "22+p tai muu TPV",
+            "2d = odottaa, muut 5+p"
+        ],
+        "7": [
+            "2d\/h\/s",
+            "6k, 6-10p",
+            "3x = min, 3nt = max, 3y = singeli"
+        ],
+        "8": [
+            "2nt",
+            "20-21",
+            "puppet, siirrot"
+        ],
+        "9": [
+            "3c\/d\/h\/s",
+            "6k, 6-10p",
+            ""
+        ],
+        "10": [
+            "3nt",
+            "l\u00e4pik\u00e4yv\u00e4 alav\u00e4ri 7+k",
+            "4c\/5c = passaa tai korjaa"
+        ],
+        "11": [
+            "4c\/d\/h\/s",
+            "4k, 6-10p",
+            ""
+        ],
+        "12": [
+            "",
+            "",
+            ""
+        ]
+    },
+    "fields": {
+        "sheetp1": "Matti Meik\u00e4l\u00e4inen",
+        "sheetMateNumberp1": "5909",
+        "sheetp2": "Maija Mehil\u00e4inen",
+        "sheetMateNumberp2": "5959",
+        "sheetBaseSystem": "SAYC \/ 5542",
+        "sheetLeadInput": "11-s\u00e4\u00e4nt\u00f6, dubbelista isompi, mud, sarjasta isoin, Xxx = pieni",
+        "sheetSignalInput": "italialaiset sakaukset, udca",
+        "sheetConventionInput": "Skrot, k\u00e4\u00e4nnetyt alav\u00e4rit, XYZ, Puppet, siirrot, Smolen, Garbage, 1430, Ogust"
+    }
+}
