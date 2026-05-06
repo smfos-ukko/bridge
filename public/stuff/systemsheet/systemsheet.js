@@ -161,8 +161,9 @@ const plantSystem = (s) => {
     inputs.querySelector('.dynamic-input')?.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
-export async function loadSystems(user, token) {
-    if (!user || !token) return;
+export async function loadSystems() {
+    if (!sessionStorage.getItem('user') || !sessionStorage.getItem('token')) return;
+    const token = sessionStorage.getItem('token');
     const res = await api('loadsystem', { token });
     systems = res;
     const sheetManageTitle = document.getElementById('sheetManageTitle');
@@ -186,8 +187,10 @@ export async function loadSystems(user, token) {
     drawPrint();
 }
 
-const resetSystems = (user, token) => {
+const resetSystems = () => {
     unLoadSystems();
+    const user = sessionStorage.getItem('user');
+    const token = sessionStorage.getItem('token');
     loadSystems(user, token);
 }
 
@@ -200,7 +203,9 @@ export async function unLoadSystems() {
     }
 }
 
-export function systemSheet(user, token) {
+export function systemSheet() {
+    const user = sessionStorage.getItem('user');
+    const token = sessionStorage.getItem('token');
     const inputs = document.getElementById('systemSheetInputs');
     table = dynamicInputTable(3, 'bidsResponsesInputTable', ['Tarjous', 'Merkitys', 'Vastaukset'], false);
     const system = {
@@ -248,7 +253,9 @@ export function systemSheet(user, token) {
     async function saveSystem() {
         const systemName = document.getElementById('systemName').value;
 
-        if (!user) {
+        const savingUser = sessionStorage.getItem('user');
+        const savingToken = sessionStorage.getItem('token');
+        if (!savingUser) {
             showMessage('Kirjaudu sisään tallentaaksesi systeemin.');
             return;
         }
@@ -258,17 +265,19 @@ export function systemSheet(user, token) {
             return;
         }
 
-        const res = await api('savesystem', { username: user, name: systemName, token, data: system });
-        resetSystems(user, token);
+        const res = await api('savesystem', { username: savingUser, name: systemName, token: savingToken, data: system });
+        resetSystems();
     }
         
     async function deleteSystem() {
         const systemName = document.getElementById('systemName').value;
+        const deletingUser = sessionStorage.getItem('user');
+        const deletingToken = sessionStorage.getItem('token');
 
-        if (!user) return;
+        if (!deletingUser) return;
 
-        const res = await api('deletesystem', { username: user, name: systemName, token });
-        resetSystems(user, token);
+        const res = await api('deletesystem', { username: deletingUser, name: systemName, token: deletingToken });
+        resetSystems();
     }
 
     const emptySystem = () => {

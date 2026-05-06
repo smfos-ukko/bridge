@@ -13,7 +13,6 @@ const loadedPages = [];
 
 export async function api(action, data = null) {
     const API = window.location.origin + "/bridge/public/stuff/api.php";
-    console.log(API);
 
     const res = await fetch(`${API}?action=${action}`, {
         method: data ? "POST" : "GET",
@@ -37,17 +36,18 @@ async function checkSession() {
     const res = await api('checksession');
 
     if (res.user) {
-        user = res.user;
-        token = res.token;
-        welcomeText.innerText = 'Hei ' + user + '!';
+        sessionStorage.setItem = ('user', res.user);
+        sessionStorage.setItem = ('token', res.token);
+        welcomeText.innerText = 'Hei ' + res.user + '!';
         authButton.innerText = 'Kirjaudu ulos';
-        loadSystems(user, token);
+        loadSystems(res.user, res.token);
     } else {
         welcomeText.innerText = '';
         authButton.innerText = 'Kirjaudu';
     }
 }
-if (!user) {
+
+if (sessionStorage.getItem('user')) {
     checkSession();
 }
 
@@ -62,9 +62,8 @@ const loadPage = async (page) => {
     wrapper.innerHTML = html;
     container.appendChild(wrapper);
     if (page == 'bidwriter') bidWriter();
-    if (page == 'systemsheet') systemSheet(user, token);
+    if (page == 'systemsheet') systemSheet();
     loadedPages.push(page);
-    console.log(loadedPages);
 }
 
 const openPage = (page) => {
@@ -90,7 +89,7 @@ for (let opb of openPageButtons) {
 }
 
 const toggleSlide = () => {
-    if (user) {
+    if (sessionStorage.getItem('user')) {
         logout();
     } else {
         if (loginPanel.classList.contains('open')) {
@@ -106,8 +105,8 @@ authButton.addEventListener('click', () => toggleSlide());
 async function logout() {
     const res = await api('logout');
     if (!res.error) {
-        user = null;
-        token = null;
+        sessionStorage.removeItem('user');
+        sessionStorage.removeItem('token');
         welcomeText.innerText = '';
         authButton.innerText = 'Kirjaudu';
         unLoadSystems();
@@ -132,18 +131,18 @@ async function signup() {
 }
 
 async function login() {
-    if (!user) {
+    if (!sessionStorage.getItem('user')) {
         const username = document.getElementById('usernameinput').value;
         const password = document.getElementById('passwordinput').value;
         const res = await api('login', { username, password });
         if (!res.error) {
-            user = username;
-            token = res.token;
-            welcomeText.innerText = 'Hei ' + user + '!';
+            sessionStorage.setItem('user', res.username);
+            sessionStorage.setItem('token', res.token);
+            welcomeText.innerText = 'Hei ' + res.username + '!';
             authButton.innerText = 'Kirjaudu ulos';
             document.getElementById('loginslide').classList.remove('open');
-            loadSystems(user, token);
-            welcomeText.innerText = 'Hei ' + user + '!';
+            loadSystems();
+            welcomeText.innerText = 'Hei ' + res.username + '!';
             authButton.innerText = 'Kirjaudu ulos';
         } else {
             loginMessage.innerText = 'Väärä käyttäjänimi tai salasana.';

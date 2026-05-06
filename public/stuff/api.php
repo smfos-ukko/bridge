@@ -53,13 +53,16 @@ function jsonResponse($data, $code = 200) {
     exit;
 }
 
-function checkAuth() {
+function checkAuth($input) {
+    global $db;
     if (!isset($_SESSION['user_id'])) {
         $stmt = $db->prepare("SELECT * FROM users WHERE username = ?");
         $stmt->execute([$input['username']]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($input['token'] == $user['token']) {
             $_SESSION['user_id'] = $user['id'];
+            $_SESSION['token'] = $user['token'];
+            $_SESSION['username'] = $user['username'];
         } else {
             jsonResponse(['error' => 'unauthorized'], 401);
         }
@@ -112,7 +115,7 @@ switch ($action) {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['token'] = $user['token'];
             $_SESSION['username'] = $user['username'];
-            jsonResponse(['status' => 'ok', 'token' => $user['token']]);
+            jsonResponse(['status' => 'ok', 'username' => $user['username'], 'token' => $user['token']]);
         } else {
             jsonResponse(['error' => 'invalid'], 401);
         }
@@ -141,7 +144,7 @@ switch ($action) {
     case 'savesystem':
         $input = json_decode(file_get_contents('php://input'), true);
 
-        checkAuth();
+        checkAuth($input);
 
         $stmt = $db->prepare("SELECT * FROM systems WHERE user_id = ? AND name = ?");
         $stmt->execute([$_SESSION['user_id'], $input['name']]);
@@ -179,7 +182,7 @@ switch ($action) {
     case 'loadsystem':
         $input = json_decode(file_get_contents('php://input'), true);
 
-        checkAuth();
+        checkAuth($input);
 
         $stmt = $db->prepare("
             SELECT id, name, data, updated_at
@@ -201,7 +204,7 @@ switch ($action) {
     case 'deletesystem':
         $input = json_decode(file_get_contents('php://input'), true);
 
-        checkAuth();
+        checkAuth($input);
 
         $stmt = $db->prepare("
             SELECT id, name
@@ -231,3 +234,5 @@ switch ($action) {
     default:
         jsonResponse(['error' => 'unknown action'], 404);
 }
+
+?>
