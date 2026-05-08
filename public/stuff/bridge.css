@@ -36,7 +36,7 @@ h3 {
     justify-content: space-between;
     min-height: 75px;
     background-color: var(--feature-dark);
-    padding: 30px;
+    padding: 15px 30px;
     border-bottom: 5px double var(--feature-light);
 }
 
@@ -55,7 +55,7 @@ h3 {
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
-    background: #d8fd22;
+    background-color: #d8fd22;
     color: black;
     padding: 15px 20px;
     border-radius: 6px;

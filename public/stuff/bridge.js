@@ -173,9 +173,11 @@ backButton.onclick = () => {
     }
 };
 
-export const showMessage = (message, duration = 2000) => {
+export const showMessage = (message, color = '#d8fd22', duration = 2000) => {
     const mDiv = document.getElementById('generalMessage');
     mDiv.textContent = message;
+    mDiv.style.backgroundColor = color;
+
     mDiv.classList.add('show');
 
     setTimeout(() => {

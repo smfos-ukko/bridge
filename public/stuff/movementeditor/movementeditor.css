@@ -1,7 +1,10 @@
+#movementeditor {
+    padding: 0;
+}
+
 #movementeditor * {
     display: flex;
     flex-direction: column;
-    padding: 0;
 }
 
 #mvMain {
@@ -17,10 +20,35 @@
     background-color: rgb(65, 65, 65);
 }
 
-#mvView {}
+#mvView {
+    align-items: center;
+    padding-top: 20px;
+}
 
-@media (min-width: 631) {
+#mvPaper {
+    background-color: white;
+    height: 50dvh;
+    aspect-ratio: 210 / 297;
+}
+
+@media (min-width: 631px) {
     #mvMain {
         flex-direction: row;
+    }
+
+    #mvView {
+        align-items: center;
+        width: 100%;
+    }
+
+    #mvTools {
+        min-width: 200px;
+        height: 70dvh;
+        margin: 20px;
+        border-radius: 10px;
+    }
+
+    #mvPaper {
+        height: 70dvh;
     }
 }
