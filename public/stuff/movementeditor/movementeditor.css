@@ -1,0 +1,26 @@
+#movementeditor * {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+}
+
+#mvMain {
+    flex-direction: column;
+}
+
+#mvControls {
+    background-color: rgb(10, 92, 18);
+    border-bottom: 1px solid rgb(203, 203, 203);
+}
+
+#mvTools {
+    background-color: rgb(65, 65, 65);
+}
+
+#mvView {}
+
+@media (min-width: 631) {
+    #mvMain {
+        flex-direction: row;
+    }
+}

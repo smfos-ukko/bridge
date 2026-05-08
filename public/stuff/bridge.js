@@ -1,5 +1,6 @@
 import { loadSystems, unLoadSystems, systemSheet } from "./systemsheet/systemsheet.js";
 import { bidWriter } from "./bidwriter/bidwriter.js";
+import { movementEditor } from "./movementeditor/movementeditor.js";
 
 const mainPage = document.getElementById('mainpage');
 const loginPanel = document.getElementById('loginslide');
@@ -54,7 +55,7 @@ if (sessionStorage.getItem('user')) {
 const loadPage = async (page) => {
     if (loadedPages.includes(page)) return;
     let pth = `./public/stuff/${page}/${page}.html`;
-    if (window.location.hostname == '127.0.0.1') pth = `./stuff/${page}/${page}.html`;
+    if (window.location.hostname == '127.0.0.1') pth = `./public/stuff/${page}/${page}.html`;
     const res = await fetch(pth);
     const html = await res.text();
     const container = document.getElementById('toolContainer');
@@ -63,6 +64,7 @@ const loadPage = async (page) => {
     container.appendChild(wrapper);
     if (page == 'bidwriter') bidWriter();
     if (page == 'systemsheet') systemSheet();
+    if (page == 'movementeditor') movementEditor();
     loadedPages.push(page);
 }
 
