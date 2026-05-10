@@ -4,11 +4,11 @@
 
 #movementeditor * {
     display: flex;
-    flex-direction: column;
 }
 
 #mvMain {
     flex-direction: column;
+    min-width: 200px;
 }
 
 #mvControls {
@@ -23,12 +23,170 @@
 #mvView {
     align-items: center;
     padding-top: 20px;
+    flex-direction: column;
 }
 
 #mvPaper {
     background-color: white;
+    position: relative;
+    flex-direction: column;
+    justify-content: space-between;
     height: 50dvh;
     aspect-ratio: 210 / 297;
+    color: black;
+    /*cross*/
+    /*
+    border: 1px solid black;
+    */
+}
+
+#mvPaper,
+#mvPaper * {
+    box-sizing: border-box;
+}
+
+#mvTools {
+    flex-direction: column;
+    align-items: center;
+}
+
+#mvTools h3 {
+    margin-right: 0;
+}
+
+#movPageSelector {
+    justify-content: center;
+    margin-top: 10px;
+    width: 100%;
+    align-items: center;
+}
+
+#movPageSelector button {
+    border-radius: 0;
+    margin: 0;
+    justify-content: center;
+}
+
+#selectedPageIndicator {
+    justify-content: center;
+    align-items: center;
+    width: 50px;
+    background-color: #838383;
+    height: 100%;
+}
+
+/*cross*/
+/*
+#mvPaper::before,
+#mvPaper::after {
+    content: '';
+    position: absolute;
+    background: red;
+}
+
+#mvPaper::before {
+    width: 2px;
+    height: 100%;
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+}
+
+#mvPaper::after {
+    width: 100%;
+    height: 2px;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+}
+*/
+/*end cross*/
+
+.movTableNumber h1 {
+    font-size: xxx-large;
+}
+
+.movSegment {
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.movMid {
+    align-items: center;
+}
+
+.movDefaultTransfer {
+    align-items: center;
+}
+
+.movEast {
+    transform: rotate(270deg) translateX(55%) translateY(-65%);
+    transform-origin: right;
+}
+
+.movNorth {
+    transform: rotate(180deg) translateY(-100%);
+    transform-origin: top;
+}
+
+.movWest {
+    transform: rotate(90deg) translateX(-50%) translateY(-65%);
+    transform-origin: left;
+}
+
+.movNumEast {
+    transform: rotate(270deg) translateY(-50%);
+    transform-origin: right;
+}
+
+.movNumNorth {
+    transform: rotate(180deg) translateX(100%) translateY(-100%);
+    transform-origin: top;
+}
+
+.movNumWest {
+    transform: rotate(90deg) translateX(-50%) translateY(-50%);
+    transform-origin: left;
+}
+
+.movNumSouth {
+    transform: translateX(100%);
+}
+
+.movTransferTable,
+.movTransferTable * {
+    background-color: #befdca;
+    display: grid !important;
+}
+
+.mtMain {
+    grid-template-columns: repeat(4, 1fr);
+    position: absolute;
+    justify-self: center;
+    align-self: center;
+}
+
+.mtCell {
+    border-right: 1px solid rgb(78, 78, 78);
+    text-align: center;
+    padding: 2px;
+    text-wrap: nowrap;
+}
+
+.mtOdd {
+    background-color: #ceceff;
+}
+
+.mtCell:nth-child(4n) {
+    border-right: none;
+}
+
+.mth {
+    background-color: #12ec5b;
+}
+
+.movTransferTable td:last-child {
+    border-right: none;
 }
 
 @media (min-width: 631px) {
