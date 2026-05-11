@@ -125,13 +125,17 @@
 }
 
 .movNorth {
-    transform: rotate(180deg) translateY(-100%);
+    transform: rotate(180deg) translateY(-100%) translateX(-7%);
     transform-origin: top;
 }
 
 .movWest {
     transform: rotate(90deg) translateX(-50%) translateY(-65%);
     transform-origin: left;
+}
+
+.movSouth {
+    transform: translateX(7%);
 }
 
 .movNumEast {

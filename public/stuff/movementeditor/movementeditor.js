@@ -14,17 +14,15 @@ const changePage = (dir) => {
     if (dir == 'prev') {
         if (pageSettings.selectedPage > 1) pageSettings.selectedPage--;
         pageChanged = true;
-        console.log(dir, pageSettings);
     }    
     if (dir == 'next') {
         if (pageSettings.selectedPage < movementData.numberOfTables) pageSettings.selectedPage++;
         pageChanged = true;
-                console.log(dir, pageSettings);
-
     }  
     if (pageChanged) {
         document.getElementById('mvPaper').innerHTML = pageHtml[pageSettings.selectedPage];
         document.getElementById('selectedPageIndicator').innerHTML = '<span>' + pageSettings.selectedPage + '</span>';
+        scaleTable();
     }
 };
 
@@ -118,7 +116,22 @@ const updateMovement = () => {
             }
         }
         movementData.transfers[tbl].EWdefault = maxKey;
-        console.log(transitionCounts, maxKey, maxCount, movementData);
+        //console.log(transitionCounts, maxKey, maxCount, movementData);
+
+        //paikallaan olevat
+        let stayNS, stayEW;
+        for (let t = 1; t <= movementData.numberOfTables; t++) {
+            stayNS = [];
+            stayEW = [];
+            for (let r = 1; r <= movementData.numberOfRounds; r++) {
+                const movN = movementData.tables[t][r][0];
+                const movE = movementData.tables[t][r][1];
+                if (!stayNS.includes(movN)) stayNS.push(movN);
+                if (!stayEW.includes(movE)) stayEW.push(movE);
+            }
+            if (stayNS.length == 1) movementData.transfers[t].NSdefault = '';
+            if (stayEW.length == 1) movementData.transfers[t].EWdefault = '';
+        }
     }
 
     renderMovement();
@@ -126,8 +139,13 @@ const updateMovement = () => {
 };
 
 const scaleTable = () => {
-    const mtMain = document.getElementById('mtMain');
-    console.log('client ', mtMain.clientHeight);
+    const mtMain = document.getElementsByClassName('mtMain')[0];
+    const maxHeight = 390;
+    const actualHeight = mtMain.scrollHeight;
+    if (actualHeight > maxHeight) {
+        const scale = maxHeight / actualHeight;
+        mtMain.style.transform = `scale(${scale})`;
+    }
 };
 
 const renderMovement = () => {
@@ -174,6 +192,7 @@ const renderMovement = () => {
     }
 
     mvPaper.innerHTML = pageHtml[pageSettings.selectedPage];
+    scaleTable();
 };
 
 export function movementEditor() {
@@ -214,10 +233,10 @@ export function movementEditor() {
                             movementData.tables[tbl][rnd] = [];
                         }
                     }
-                    console.log(movementData);
+                    //console.log(movementData);
 
                     for (let i = 2; i < lines.length; i++) {
-                        console.log('line: ',lines[i]);
+                        //console.log('line: ',lines[i]);
                         if (!regex.test(lines[i].trim())) continue;
                         const blocks = lines[i].split(' ');
                         if (parseInt(blocks[0]) !== i - 1) {
@@ -249,9 +268,4 @@ export function movementEditor() {
     document.getElementById('mvOpenFileButton').addEventListener('click', () => {
         openMovementFile();
     });
-
-    document.addEventListener('DOMContentLoaded', () => {
-        scaleTable();
-    });
-
 }
