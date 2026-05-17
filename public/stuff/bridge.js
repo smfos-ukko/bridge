@@ -1,6 +1,7 @@
 import { loadSystems, unLoadSystems, systemSheet } from "./systemsheet/systemsheet.js";
 import { bidWriter } from "./bidwriter/bidwriter.js";
 import { movementEditor } from "./movementeditor/movementeditor.js";
+import { sheetViewer } from "./sheetviewer/sheetviewer.js";
 
 const mainPage = document.getElementById('mainpage');
 const loginPanel = document.getElementById('loginslide');
@@ -65,6 +66,7 @@ const loadPage = async (page) => {
     if (page == 'bidwriter') bidWriter();
     if (page == 'systemsheet') systemSheet();
     if (page == 'movementeditor') movementEditor();
+    if (page == 'sheetviewer') sheetViewer();
     loadedPages.push(page);
 }
 

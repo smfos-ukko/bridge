@@ -107,6 +107,7 @@ const updateMovement = () => {
             }
         }
         movementData.transfers[tbl].NSdefault = maxKey;
+        movementData.transfers[tbl].NSdefaultArr = maxKey.split(' ');
         maxKey = null;
         maxCount = 0;
         for (const key in transitionCounts.EW) {
@@ -116,6 +117,7 @@ const updateMovement = () => {
             }
         }
         movementData.transfers[tbl].EWdefault = maxKey;
+        movementData.transfers[tbl].EWdefaultArr = maxKey.split(' ');
         //console.log(transitionCounts, maxKey, maxCount, movementData);
 
         //paikallaan olevat
