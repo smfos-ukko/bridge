@@ -28,9 +28,44 @@
     grid-template-columns: repeat(3, 1fr);
 }
 
+.svTrickGrid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+}
+
+.svDealTricksInner div {
+    text-align: center;
+}
+
 #svDealView {
     max-width: 570px;
     margin-top: 15px;
+}
+
+.svNonVul {
+    background-color: #dedede;
+}
+
+.svVul {
+    background-color: red;
+}
+
+.svDealCenterOuter {
+    background-color: #000;
+}
+
+.svDealCenterInner div {
+    height: 30px;
+    width: 30px;
+    color: black;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.svDealCenterDealNumber {
+    background-color: #cdc5c5;
 }
 
 .svDealHand {

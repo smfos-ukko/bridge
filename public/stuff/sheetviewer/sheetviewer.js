@@ -68,6 +68,54 @@ const renderPoints = (dealIn) => {
     `;
 }
 
+const renderTricks = (dealIn) => {
+    let divs = '';
+    for (let dirs = 0; dirs < svData.deals[dealIn].tricks.length; dirs++) {
+        for (let r = 0; r < svData.deals[dealIn].tricks[dirs].length; r++) {
+            divs += `<div>${svData.deals[dealIn].tricks[dirs][r]}</div>`;
+        }
+    }
+    return `
+        <div class="svDealTricksOuter svCardOuter">
+            <div class="svDealTricksInner svTrickGrid svCardInner">
+                <div></div>
+                <div class="svTrickSymbol"><span class="spade">♠</span></div>
+                <div class="svTrickSymbol"><span class="heart">♥</span></div>
+                <div class="svTrickSymbol"><span class="diamond">♦</span></div>
+                <div class="svTrickSymbol"><span class="club">♣</span></div>
+                <div class="svTrickSymbol"><span>NT</span></div>
+                ${divs}
+            </div>
+        </div>
+    `;
+};
+
+const renderCenter = (dealIn) => {
+    return `
+        <div class="svDealCenterOuter svCardOuter">
+            <div class="svDealCenterInner svGrid svCardInner">
+                <div></div>
+                <div class="
+                        ${['Kaikki', 'N-S', 'All', 'P-E'].includes(svData.deals[dealIn].vul) ? 'svVul' : 'svNonVul'}
+                    ">${svData.deals[dealIn].dealer == ('Pohjoinen' || 'North') ? 'D' : ''}</div>
+                <div></div>
+                <div class="
+                        ${['Kaikki', 'E-W', 'All', 'I-L'].includes(svData.deals[dealIn].vul) ? 'svVul' : 'svNonVul'}
+                    ">${svData.deals[dealIn].dealer == ('Länsi' || 'West') ? 'D' : ''}</div>
+                <div class="svDealCenterDealNumber">${dealIn}</div>
+                <div class="
+                        ${['Kaikki', 'E-W', 'All', 'I-L'].includes(svData.deals[dealIn].vul) ? 'svVul' : 'svNonVul'}
+                    ">${svData.deals[dealIn].dealer == ('Itä' || 'East') ? 'D' : ''}</div>
+                <div></div>
+                <div class="
+                        ${['Kaikki', 'N-S', 'All', 'P-E'].includes(svData.deals[dealIn].vul) ? 'svVul' : 'svNonVul'}
+                    ">${svData.deals[dealIn].dealer == ('Etelä' || 'South') ? 'D' : ''}</div>
+                <div></div>
+            </div>
+        </div>
+    `;
+};
+
 const renderBoards = () => {
     const svMain = document.getElementById('svMain');
 
@@ -92,11 +140,11 @@ const renderBoards = () => {
                     <div class="svDealHand">${renderDeal(svData.deals[i].hands.n)}</div>
                     <div class="svDealOptimumCard svCard">${svData.deals[i].optimum}</div>
                     <div class="svDealHand">${renderDeal(svData.deals[i].hands.w)}</div>
-                    <div class="svDealCenter"></div>
+                    <div class="svDealCenter">${renderCenter(i)}</div>
                     <div class="svDealHand">${renderDeal(svData.deals[i].hands.e)}</div>
                     <div class="svDealPoints">${renderPoints(i)}</div>
                     <div class="svDealHand">${renderDeal(svData.deals[i].hands.s)}</div>
-                    <div class="svDealTricks"></div>
+                    <div class="svDealTricks">${renderTricks(i)}</div>
                 </div>
             </div>
         `;
@@ -116,6 +164,7 @@ const renderBoards = () => {
         btn.addEventListener('click', () => { switchDeal(btn.getAttribute('data-index')) });
     }
     svMain.querySelector('.svDealCard').style.display = 'block';
+    console.log(svData);
 };
 
 export async function sheetViewer() {
