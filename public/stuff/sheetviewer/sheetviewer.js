@@ -8,7 +8,8 @@ const svSettings = {
     selectedDeal: 1
 };
 
-const proxy = 'https://corsproxy.io/?url=';
+//const proxy = 'https://corsproxy.io/?url=';
+const proxy = 'https://api.allorigins.win/get?url=';
 
 const trimLine = (trln) => {
     if (!trln) return null;
