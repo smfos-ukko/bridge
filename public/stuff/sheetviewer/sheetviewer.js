@@ -15,17 +15,92 @@ const trimLine = (trln) => {
     return trln.split(' ').filter(Boolean);
 };
 
+const switchDeal = (ind) => {
+    const dls = document.querySelectorAll('.svDealCard');
+    for (let crd of dls) {
+        if (crd.getAttribute('data-index') != ind) {
+            crd.style.display = 'none';
+        } else {
+            crd.style.display = 'block';
+        }
+    }
+};
+
+const renderDeal = (dealIn) => {
+    return `
+        <div class="svDealOuter">
+            <span class="spade">♠ </span><span>${dealIn[0]}</span><br/>
+            <span class="heart">♥ </span><span>${dealIn[1]}</span><br/>
+            <span class="diamond">♦ </span><span>${dealIn[2]}</span><br/>
+            <span class="club">♣ </span><span>${dealIn[3]}</span>
+        </div>
+    `;
+};
+
+const renderPoints = (dealIn) => {
+    const countPoints = (hc) => {
+        const values = { A: 4, K: 3, Q: 2, J: 1 };
+        let points = 0;
+        for (let suit = 0; suit < hc.length; suit++) {
+            for (let card = 0; card < hc[suit].length; card++) {
+                const rank = String(hc[suit][card]).toUpperCase();
+                if (values[rank]) {
+                    points += values[rank];
+                }
+            }
+        }
+        return points;
+    }
+    
+    const nPoints = countPoints(svData.deals[dealIn].hands.n);
+    const ePoints = countPoints(svData.deals[dealIn].hands.e);
+    const sPoints = countPoints(svData.deals[dealIn].hands.s);
+    const wPoints = countPoints(svData.deals[dealIn].hands.w);
+
+    return `
+        <div class="svDealPointsOuter svCardOuter">
+            <div class="svDealPointsInner svGrid svCardInner">
+                <div></div><div class="svDealPointsDisplay">${nPoints}</div><div></div>
+                <div class="svDealPointsDisplay">${wPoints}</div><div></div><div class="svDealPointsDisplay">${ePoints}</div>
+                <div></div><div class="svDealPointsDisplay">${sPoints}</div><div></div>
+            </div>
+        </div>
+    `;
+}
+
 const renderBoards = () => {
     const svMain = document.getElementById('svMain');
 
     //menyy
     let buttonsHtml = '';
-    for (let i = 1; i <= svContent.length; i++) {
+    for (let i = 1; i <= Object.keys(svData.deals).length; i++) {
         buttonsHtml += `<button class="svDealButton" data-index="${i}">${i}</button>`
     }
 
     //deal
     let dealHtml = '';
+    for (let i = 1; i <= Object.keys(svData.deals).length; i++) {
+        dealHtml += `
+            <div class="svDealCard" data-index="${i}">
+                <div class="svGrid">
+                    <div class="svDealInfoCard svCard">
+                        <span>Jakaja:</span><br/>
+                        <span class="indent">${svData.deals[i].dealer}</span><br/>
+                        <span>Vaarassa:</span><br/>
+                        <span class="indent">${svData.deals[i].vul == 'Ei' ? 'Ei kukaan' : svData.deals[i].vul}</span>
+                    </div>
+                    <div class="svDealHand">${renderDeal(svData.deals[i].hands.n)}</div>
+                    <div class="svDealOptimumCard svCard">${svData.deals[i].optimum}</div>
+                    <div class="svDealHand">${renderDeal(svData.deals[i].hands.w)}</div>
+                    <div class="svDealCenter"></div>
+                    <div class="svDealHand">${renderDeal(svData.deals[i].hands.e)}</div>
+                    <div class="svDealPoints">${renderPoints(i)}</div>
+                    <div class="svDealHand">${renderDeal(svData.deals[i].hands.s)}</div>
+                    <div class="svDealTricks"></div>
+                </div>
+            </div>
+        `;
+    }
 
     //final
     let html = `
@@ -37,6 +112,10 @@ const renderBoards = () => {
         </div>
     `;
     svMain.innerHTML = html;
+    for (let btn of svMain.querySelectorAll('.svDealButton')) {
+        btn.addEventListener('click', () => { switchDeal(btn.getAttribute('data-index')) });
+    }
+    svMain.querySelector('.svDealCard').style.display = 'block';
 };
 
 export async function sheetViewer() {
@@ -140,7 +219,6 @@ export async function sheetViewer() {
 
                 const allowedDirs = ['N', 'S', 'E', 'W', 'NS', 'EW', 'P', 'I', 'L', 'PE', 'IL'];
                 for (let o = 15; o <= 19; o++) {
-                    console.log('o ', ch[o], ' ch ', ch);
                     const opt = trimLine(ch[o]);
                     if (!opt) break;
                     if (!allowedDirs.includes(opt[0])) break;
@@ -157,6 +235,6 @@ export async function sheetViewer() {
         } catch (err) {
             showMessage('Virhe! ' + err, 'red');
         }
-        console.log('svData: ', svData);
+        renderBoards();
     });
 }
