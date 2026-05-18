@@ -28,6 +28,10 @@ h3 {
     margin-right: 15px;
 }
 
+#ohems {
+    margin-top: 20px;
+}
+
 .banner {
     display: flex;
     position: relative;
@@ -92,10 +96,6 @@ h3 {
 
 #subSites {
     display: flex;
-}
-
-.mpMessage {
-    margin: 30px 0;
 }
 
 button {

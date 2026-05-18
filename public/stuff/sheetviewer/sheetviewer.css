@@ -2,6 +2,10 @@
     position: relative;
 }
 
+#svShareButton {
+    display: none;
+}
+
 #svRight {
     background-color: green;
     padding: 15px;
@@ -38,7 +42,6 @@
 }
 
 #svDealView {
-    max-width: 570px;
     margin-top: 15px;
 }
 
@@ -68,11 +71,26 @@
     background-color: #cdc5c5;
 }
 
+.svDealResultsBoard {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    background-color: #333328;
+}
+
+.svDealResultsBoard div {
+    padding: 3px 3px;
+}
+
+.svEven {
+    background-color: #515151;
+}
+
 .svDealHand {
     background-color: darkgreen;
     padding: 5px;
     display: flex;
     justify-content: center;
+    letter-spacing: 1px;
 }
 
 .svDealOptimumCard {
@@ -99,9 +117,40 @@
     text-align: center;
 }
 
+@media (max-width: 630px) {
+    #svMain {
+        margin-top: 15px;
+    }
+
+    .svDealCard {
+        flex-direction: column;
+    }
+
+    .svDealCard {
+        font-size: x-small;
+    }
+
+    .svDealResultsBoard {
+        font-size: 8px;
+        margin-top: 10px;
+    }
+
+    .svVisibleOnDesktop {
+        display: none;
+    }
+}
+
 @media (min-width: 631px) {
     #sheetviewer {
         min-height: 30vh;
+    }
+
+    #svDealView {
+        margin-top: 120px;
+    }
+
+    .svDealResultsBoard {
+        grid-template-columns: 3fr 3fr repeat(7, 1fr);
     }
 
     #svRight {
@@ -110,7 +159,43 @@
         right: 20px;
     }
 
-    #svMain {
+    #svGrid {
+        max-width: 550px;
+    }
+
+    #svDealsMenu {
         max-width: 65%;
+        min-height: 165px;
+    }
+
+    .svDealCard {
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .svDealBoardTop {
+        width: 550px;
+        border: 5px solid black;
+        padding: 10px;
+        border-radius: 15px;
+        margin: 5px;
+        margin-bottom: 20px;
+        background-color: #6c0000;
+    }
+}
+
+@media (min-width: 1130px) {
+    #svDealView {
+        margin-top: 12px;
+    }
+
+    #svDealsMenu {
+        min-height: 0;
+    }
+
+    #svDealView {
+        max-width: 78%;
     }
 }

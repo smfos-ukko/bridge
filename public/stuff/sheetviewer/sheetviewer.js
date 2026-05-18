@@ -16,12 +16,21 @@ const trimLine = (trln) => {
 };
 
 const switchDeal = (ind) => {
+    if (ind == 'prev') {
+        if (svSettings.selectedDeal < 2) return;
+        ind = svSettings.selectedDeal - 1;
+    }
+    if (ind == 'next') {
+        if (svSettings.selectedDeal > Object.keys(svData.deals).length - 1) return;
+        ind = svSettings.selectedDeal + 1;
+    }
+    svSettings.selectedDeal = ind;
     const dls = document.querySelectorAll('.svDealCard');
     for (let crd of dls) {
         if (crd.getAttribute('data-index') != ind) {
             crd.style.display = 'none';
         } else {
-            crd.style.display = 'block';
+            crd.style.display = 'flex';
         }
     }
 };
@@ -116,6 +125,35 @@ const renderCenter = (dealIn) => {
     `;
 };
 
+const renderResults = (dealIn) => {
+    let brd = '';
+    for (let r = 0; r < svData.deals[dealIn].results.length; r++) {
+        for (let s = 0; s < svData.deals[dealIn].results[r].length; s++) {
+            if (s < 2) {
+                const plNum = svData.deals[dealIn].results[r][s];
+                brd += `<div class="svDealResultsBoardCell${r % 2 == 0 ? ' svEven' : ' svOdd'}">${svData.pairs[plNum]}</div>`;
+                continue;
+            }
+            brd += `<div class="svDealResultsBoardCell${r % 2 == 0 ? ' svEven' : ' svOdd'}">${svData.deals[dealIn].results[r][s]}</div>`;
+        }
+    }
+
+    return `
+        <div class="svDealResultsBoard">
+            <div class="svDealResultsBoardTitle"><span>NS</span></div>
+            <div class="svDealResultsBoardTitle"><span>EW</span></div>
+            <div class="svDealResultsBoardTitle"><span>Sitoumus</span></div>
+            <div class="svDealResultsBoardTitle"></div>
+            <div class="svDealResultsBoardTitle"></div>
+            <div class="svDealResultsBoardTitle"><span>Lähtö</span></div>
+            <div class="svDealResultsBoardTitle"><span>Tulos</span></div>
+            <div class="svDealResultsBoardTitle"><span>Pisteet</span></div>
+            <div class="svDealResultsBoardTitle"></div>
+            ${brd}
+        </div>
+    `;
+};
+
 const renderBoards = () => {
     const svMain = document.getElementById('svMain');
 
@@ -130,7 +168,7 @@ const renderBoards = () => {
     for (let i = 1; i <= Object.keys(svData.deals).length; i++) {
         dealHtml += `
             <div class="svDealCard" data-index="${i}">
-                <div class="svGrid">
+                <div class="svGrid svDealBoardTop">
                     <div class="svDealInfoCard svCard">
                         <span>Jakaja:</span><br/>
                         <span class="indent">${svData.deals[i].dealer}</span><br/>
@@ -146,6 +184,7 @@ const renderBoards = () => {
                     <div class="svDealHand">${renderDeal(svData.deals[i].hands.s)}</div>
                     <div class="svDealTricks">${renderTricks(i)}</div>
                 </div>
+                <div class="svDealResultsContainer">${renderResults(i)}</div>
             </div>
         `;
     }
@@ -163,15 +202,35 @@ const renderBoards = () => {
     for (let btn of svMain.querySelectorAll('.svDealButton')) {
         btn.addEventListener('click', () => { switchDeal(btn.getAttribute('data-index')) });
     }
-    svMain.querySelector('.svDealCard').style.display = 'block';
+    svMain.querySelector('.svDealCard').style.display = 'flex';
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight') switchDeal('next');
+        if (e.key === 'ArrowLeft') switchDeal('prev');
+    });
+    const shareButton = document.getElementById('svShareButton');
+    shareButton.style.display = 'block';
+    shareButton.addEventListener('click', () => {
+        const currentPage = window.location.href;
+        const currentLink = document.getElementById('svInput').value;
+        navigator.clipboard.writeText(currentPage + '?page=' + currentLink);
+        showMessage('Linkki kopioitu');
+    });
     console.log(svData);
 };
 
+const svReset = () => {
+    document.getElementById('svMain').innerHTML = '';
+    svData.pairs = {};
+    svData.deals = {};
+    svSettings.selectedDeal = 1;
+}
+
 export async function sheetViewer() {
     document.getElementById('svFetchButton').addEventListener('click', async () => {
+        svReset();
         try {
-            const res = await fetch(proxy + 'https://www.bridgefinland.fi/bilbo/res/22713.htm#scoretables');
-            //const url = document.getElementById('svInput').value;
+            const url = document.getElementById('svInput').value;
+            const res = await fetch(proxy + url);
             const parser = new DOMParser();
             const buffer = await res.arrayBuffer();
             const decoder = new TextDecoder("iso-8859-1");
@@ -195,7 +254,7 @@ export async function sheetViewer() {
                     continue;
                 }
                 if (playersHasBegun) {
-                    const ln = line.split(' ').filter(Boolean);
+                    const ln = line.split(' ').filter(Boolean).filter(item => item !== '*');
                     svData.pairs[ln[1]] = ln[5] + ' / ' + ln[8];
                 }
             }

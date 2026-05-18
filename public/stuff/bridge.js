@@ -187,3 +187,14 @@ export const showMessage = (message, color = '#d8fd22', duration = 2000) => {
         mDiv.textContent = '';
     }, duration);
 };
+
+//sheetviewer link
+const params = new URLSearchParams(window.location.search);
+const pageParam = params.get('page');
+if (pageParam) {
+    document.querySelector('.openPageButton[name="sheetviewer"]').click();
+    setTimeout(() => {
+        document.getElementById('svInput').value = pageParam;
+        document.getElementById('svFetchButton').click();
+    }, 500);
+}
