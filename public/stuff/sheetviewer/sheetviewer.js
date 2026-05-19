@@ -9,7 +9,7 @@ const svSettings = {
 };
 
 //const proxy = 'https://corsproxy.io/?url=';
-const proxy = 'https://api.allorigins.win/get?url=';
+const proxy = '';
 
 const trimLine = (trln) => {
     if (!trln) return null;
