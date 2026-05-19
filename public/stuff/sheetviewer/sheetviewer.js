@@ -86,10 +86,10 @@ const renderTricks = (dealIn) => {
         <div class="svDealTricksOuter svCardOuter">
             <div class="svDealTricksInner svTrickGrid svCardInner">
                 <div></div>
-                <div class="svTrickSymbol"><span class="spade">♠</span></div>
-                <div class="svTrickSymbol"><span class="heart">♥</span></div>
-                <div class="svTrickSymbol"><span class="diamond">♦</span></div>
                 <div class="svTrickSymbol"><span class="club">♣</span></div>
+                <div class="svTrickSymbol"><span class="diamond">♦</span></div>
+                <div class="svTrickSymbol"><span class="heart">♥</span></div>
+                <div class="svTrickSymbol"><span class="spade">♠</span></div>
                 <div class="svTrickSymbol"><span>NT</span></div>
                 ${divs}
             </div>
