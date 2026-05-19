@@ -8,9 +8,6 @@ const svSettings = {
     selectedDeal: 1
 };
 
-//const proxy = 'https://corsproxy.io/?url=';
-const proxy = '';
-
 const trimLine = (trln) => {
     if (!trln) return null;
     return trln.split(' ').filter(Boolean);
@@ -231,7 +228,7 @@ export async function sheetViewer() {
         svReset();
         try {
             const url = document.getElementById('svInput').value;
-            const res = await fetch(proxy + url);
+            const res = await fetch('/bridge/public/stuff/proxy.php?url=' + url);
             const parser = new DOMParser();
             const buffer = await res.arrayBuffer();
             const decoder = new TextDecoder("iso-8859-1");
