@@ -133,7 +133,6 @@ const renderResults = (dealIn) => {
             if (svData.deals[dealIn].results[f][0] == svSettings.selectedPair) r = f;
             if (svData.deals[dealIn].results[f][1] == svSettings.selectedPair) r = f;
         }
-        console.log('testing ', r);
         if (r !== null) {
             for (let s = 0; s < svData.deals[dealIn].results[r].length; s++) {
                 if (s < 2) {
@@ -230,7 +229,6 @@ const renderBoards = () => {
             } else {
                 svSettings.selectedPair = pair.getAttribute('data-index');
             }
-            console.log(svSettings);
             setTimeout(() => {
                 renderBoards();   
             }, 50);
@@ -371,7 +369,12 @@ export async function sheetViewer() {
                 for (let l = 16; l < ch.length; l++) {
                     const chLine = trimLine(ch[l]);
                     if (!chLine) continue;
-                    if (chLine.length < 9) continue;
+                    if (chLine.length < 9) {
+                        if (chLine[2] == 'Pass') {
+                            svData.deals[dealNo].results.push([chLine[0], chLine[1], 'Pass', '', '', '', '', chLine[4], chLine[5]]);
+                        }
+                        continue;
+                    }
                     svData.deals[dealNo].results.push(chLine);
                 }
             }
