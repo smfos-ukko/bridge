@@ -117,6 +117,14 @@
     text-align: center;
 }
 
+.svSelectedPair {
+    background-color: brown;
+}
+
+.svHighLight {
+    background-color: #23026c;
+}
+
 @media (max-width: 630px) {
     #svMain {
         margin-top: 15px;

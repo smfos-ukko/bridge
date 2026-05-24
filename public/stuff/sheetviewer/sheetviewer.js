@@ -5,7 +5,8 @@ const svData = {
     deals: {}
 };
 const svSettings = {
-    selectedDeal: 1
+    selectedDeal: 1,
+    selectedPair: null
 };
 
 const trimLine = (trln) => {
@@ -104,19 +105,19 @@ const renderCenter = (dealIn) => {
                 <div></div>
                 <div class="
                         ${['Kaikki', 'N-S', 'All', 'P-E'].includes(svData.deals[dealIn].vul) ? 'svVul' : 'svNonVul'}
-                    ">${svData.deals[dealIn].dealer == ('Pohjoinen' || 'North') ? 'D' : ''}</div>
+                    ">${['Pohjoinen', 'North'].includes(svData.deals[dealIn].dealer) ? 'D' : ''}</div>
                 <div></div>
                 <div class="
                         ${['Kaikki', 'E-W', 'All', 'I-L'].includes(svData.deals[dealIn].vul) ? 'svVul' : 'svNonVul'}
-                    ">${svData.deals[dealIn].dealer == ('Länsi' || 'West') ? 'D' : ''}</div>
+                    ">${['Länsi', 'West'].includes(svData.deals[dealIn].dealer) ? 'D' : ''}</div>
                 <div class="svDealCenterDealNumber">${dealIn}</div>
                 <div class="
                         ${['Kaikki', 'E-W', 'All', 'I-L'].includes(svData.deals[dealIn].vul) ? 'svVul' : 'svNonVul'}
-                    ">${svData.deals[dealIn].dealer == ('Itä' || 'East') ? 'D' : ''}</div>
+                    ">${['Itä', 'East'].includes(svData.deals[dealIn].dealer) ? 'D' : ''}</div>
                 <div></div>
                 <div class="
                         ${['Kaikki', 'N-S', 'All', 'P-E'].includes(svData.deals[dealIn].vul) ? 'svVul' : 'svNonVul'}
-                    ">${svData.deals[dealIn].dealer == ('Etelä' || 'South') ? 'D' : ''}</div>
+                    ">${['Etelä', 'South'].includes(svData.deals[dealIn].dealer) ? 'D' : ''}</div>
                 <div></div>
             </div>
         </div>
@@ -125,11 +126,31 @@ const renderCenter = (dealIn) => {
 
 const renderResults = (dealIn) => {
     let brd = '';
+
+    if (svSettings.selectedPair) {
+        let r = null;
+        for (let f = 0; f < svData.deals[dealIn].results.length; f++) {
+            if (svData.deals[dealIn].results[f][0] == svSettings.selectedPair) r = f;
+            if (svData.deals[dealIn].results[f][1] == svSettings.selectedPair) r = f;
+        }
+        console.log('testing ', r);
+        if (r !== null) {
+            for (let s = 0; s < svData.deals[dealIn].results[r].length; s++) {
+                if (s < 2) {
+                    const plNum = svData.deals[dealIn].results[r][s];
+                    brd += `<div data-index="${svData.deals[dealIn].results[r][s]}" class="svPlayerPair svHighLight ${svData.deals[dealIn].results[r][s] == svSettings.selectedPair ? 'svSelectedPair' : ''} svDealResultsBoardCell${r % 2 == 0 ? ' svEven' : ' svOdd'}">${svData.pairs[plNum]}</div>`;
+                    continue;
+                }
+                brd += `<div class="svHighLight svDealResultsBoardCell${r % 2 == 0 ? ' svEven' : ' svOdd'}">${svData.deals[dealIn].results[r][s]}</div>`;
+            }
+        }
+    }
+
     for (let r = 0; r < svData.deals[dealIn].results.length; r++) {
         for (let s = 0; s < svData.deals[dealIn].results[r].length; s++) {
             if (s < 2) {
                 const plNum = svData.deals[dealIn].results[r][s];
-                brd += `<div class="svDealResultsBoardCell${r % 2 == 0 ? ' svEven' : ' svOdd'}">${svData.pairs[plNum]}</div>`;
+                brd += `<div data-index="${svData.deals[dealIn].results[r][s]}" class="svPlayerPair ${svData.deals[dealIn].results[r][s] == svSettings.selectedPair ? 'svSelectedPair' : ''} svDealResultsBoardCell${r % 2 == 0 ? ' svEven' : ' svOdd'}">${svData.pairs[plNum]}</div>`;
                 continue;
             }
             brd += `<div class="svDealResultsBoardCell${r % 2 == 0 ? ' svEven' : ' svOdd'}">${svData.deals[dealIn].results[r][s]}</div>`;
@@ -146,7 +167,7 @@ const renderResults = (dealIn) => {
             <div class="svDealResultsBoardTitle"><span>Lähtö</span></div>
             <div class="svDealResultsBoardTitle"><span>Tulos</span></div>
             <div class="svDealResultsBoardTitle"><span>Pisteet</span></div>
-            <div class="svDealResultsBoardTitle"></div>
+            <div class="svDealResultsBoardTitle svInjectAfter"></div>
             ${brd}
         </div>
     `;
@@ -197,9 +218,25 @@ const renderBoards = () => {
         </div>
     `;
     svMain.innerHTML = html;
+
     for (let btn of svMain.querySelectorAll('.svDealButton')) {
         btn.addEventListener('click', () => { switchDeal(btn.getAttribute('data-index')) });
     }
+
+    for (let pair of svMain.querySelectorAll('.svPlayerPair')) {
+        pair.addEventListener('click', () => {
+            if (pair.classList.contains('svSelectedPair')) {
+                svSettings.selectedPair = null;
+            } else {
+                svSettings.selectedPair = pair.getAttribute('data-index');
+            }
+            console.log(svSettings);
+            setTimeout(() => {
+                renderBoards();   
+            }, 50);
+        });
+    }
+
     svMain.querySelector('.svDealCard').style.display = 'flex';
     document.addEventListener('keydown', (e) => {
         if (e.key === 'ArrowRight') switchDeal('next');
