@@ -245,8 +245,20 @@ const renderBoards = () => {
     shareButton.addEventListener('click', () => {
         const currentPage = window.location.href;
         const currentLink = document.getElementById('svInput').value;
-        navigator.clipboard.writeText(currentPage + '?page=' + currentLink);
-        showMessage('Linkki kopioitu');
+        let writeLink = window.location.href;
+        writeLink = writeLink.split('?')[0];
+        writeLink += '?page=';
+        writeLink += currentLink;
+        if (svSettings.selectedPair) {
+            writeLink += '&pair=';
+            writeLink += svSettings.selectedPair;
+        }
+        try {
+            navigator.clipboard.writeText(writeLink);
+            showMessage('Linkki kopioitu');
+        } catch(ex) {
+            console.log(ex);
+        }
     });
     console.log(svData);
 };
@@ -384,3 +396,10 @@ export async function sheetViewer() {
         renderBoards();
     });
 }
+
+export const setPair = (pairToSet) => {
+    svSettings.selectedPair = pairToSet;
+    setTimeout(() => {
+        renderBoards();
+    }, 1500); 
+};

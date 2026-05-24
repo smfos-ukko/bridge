@@ -1,7 +1,7 @@
 import { loadSystems, unLoadSystems, systemSheet } from "./systemsheet/systemsheet.js";
 import { bidWriter } from "./bidwriter/bidwriter.js";
 import { movementEditor } from "./movementeditor/movementeditor.js";
-import { sheetViewer } from "./sheetviewer/sheetviewer.js";
+import { sheetViewer, setPair } from "./sheetviewer/sheetviewer.js";
 
 const mainPage = document.getElementById('mainpage');
 const loginPanel = document.getElementById('loginslide');
@@ -191,10 +191,14 @@ export const showMessage = (message, color = '#d8fd22', duration = 2000) => {
 //sheetviewer link
 const params = new URLSearchParams(window.location.search);
 const pageParam = params.get('page');
+const pairParam = params.get('pair');
 if (pageParam) {
     document.querySelector('.openPageButton[name="sheetviewer"]').click();
     setTimeout(() => {
         document.getElementById('svInput').value = pageParam;
         document.getElementById('svFetchButton').click();
     }, 500);
+}
+if (pairParam) {
+    setPair(pairParam);
 }
