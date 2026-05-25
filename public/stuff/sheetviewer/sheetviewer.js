@@ -15,15 +15,18 @@ const trimLine = (trln) => {
     return trln.split(' ').filter(Boolean);
 };
 
-const switchDeal = (ind) => {
+const switchDeal = (ind = svSettings.selectedDeal) => {
     if (ind == 'prev') {
         if (svSettings.selectedDeal < 2) return;
-        ind = svSettings.selectedDeal - 1;
+        svSettings.selectedDeal -= 1;
+        ind = svSettings.selectedDeal;
     }
     if (ind == 'next') {
         if (svSettings.selectedDeal > Object.keys(svData.deals).length - 1) return;
-        ind = svSettings.selectedDeal + 1;
+        svSettings.selectedDeal += 1;
+        ind = svSettings.selectedDeal;
     }
+    ind = Number(ind);
     svSettings.selectedDeal = ind;
     const dls = document.querySelectorAll('.svDealCard');
     for (let crd of dls) {
@@ -238,10 +241,6 @@ const renderBoards = () => {
     }
 
     svMain.querySelector('.svDealCard').style.display = 'flex';
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowRight') switchDeal('next');
-        if (e.key === 'ArrowLeft') switchDeal('prev');
-    });
     const shareButton = document.getElementById('svShareButton');
     shareButton.style.display = 'block';
     shareButton.addEventListener('click', () => {
@@ -263,6 +262,7 @@ const renderBoards = () => {
         }
     });
     console.log(svData);
+    switchDeal();
 };
 
 const svReset = () => {
@@ -416,3 +416,8 @@ export const setPair = (pairToSet) => {
         renderBoards();
     }, 1500); 
 };
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') switchDeal('next');
+    if (e.key === 'ArrowLeft') switchDeal('prev');
+});
