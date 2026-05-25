@@ -270,6 +270,76 @@ const svReset = () => {
     svSettings.selectedDeal = 1;
 }
 
+const handleBuffer = (dl, bf) => {
+    const type = bf[0];
+    const header = bf[1];
+    let headerData = [''];
+    let trueData = true;
+    let counter = 0;
+    for (let c = 0; c < header.length; c++) {
+        if (header[c] == '\\') {
+            trueData = false;
+            continue;
+        }
+        if (header[c] == ';') {
+            trueData = true;
+            counter++;
+            continue;
+        }
+        if (trueData) {
+            if (!headerData[counter]) headerData[counter] = '';
+            headerData[counter] += header[c];
+        }
+    }
+    console.log('header: ', headerData, ' bf: ', bf);
+
+    const tokenize = (row) => {
+        return row.match(/"[^"]*"|\S+/g).map(x => x.replace(/^"|"$/g, ''));
+    };
+    
+    const dat = [];
+    for (let i = 2; i < bf.length; i++) {
+        dat.push(tokenize(bf[i]));
+    }
+    console.log('token: ', dat);
+    
+    switch (type) {
+        case 'TotalScoreTable':
+            let i1 = headerData.indexOf('PairId');
+            let i2 = headerData.indexOf('Names');
+            for (let i = 0; i < dat.length; i++) {
+                svData.pairs[dat[i][i1]] = dat[i][i2];
+            }
+            break;
+        case 'ScoreTable':
+            // 0table 1round 2pairid_ns 3pairid_ew 4contract 5declarer 6result 7lead 8score_ns 9score_ew
+            // 10MP_NS 11MP_EW 11percentagens 12 percentageew
+            svData.deals[dl].results = [];
+            for (let r = 0; r < dat.length; r++) {
+                svData.deals[dl].results[r] = [];
+                svData.deals[dl].results[r].push(dat[r][2]);
+                svData.deals[dl].results[r].push(dat[r][3]);
+                svData.deals[dl].results[r].push(dat[r][4]);
+                svData.deals[dl].results[r].push(dat[r][5]);
+                svData.deals[dl].results[r].push(dat[r][6]);
+                svData.deals[dl].results[r].push(dat[r][7]);
+
+                if (dat[r][8] != '-') svData.deals[dl].results[r].push(dat[r][8]); 
+                else svData.deals[dl].results[r].push('-' + dat[r][9]);
+
+                svData.deals[dl].results[r].push(dat[r][11]);
+                svData.deals[dl].results[r].push(dat[r][12]);
+            }
+            break;
+        default:
+            break;
+    }
+    
+    console.log('checkpoint: ', svData);
+    
+    bf.splice(0, bf.length);
+};
+
 export async function sheetViewer() {
     document.getElementById('svFetchButton').addEventListener('click', async () => {
         svReset();
@@ -394,6 +464,123 @@ export async function sheetViewer() {
             showMessage('Virhe! ' + err, 'red');
         }
         renderBoards();
+    });
+
+    const readBracket = (ln) => {
+        const match = ln.match(/^\[(\w+)\s+"(.*)"\]$/);
+        return match ? [match[1], match[2]] : null;
+    };
+
+    const parsePbnDeal = (dl, ln) => {
+        svData.deals[dl].hands = {};
+        ln = ln.split(':')[1];
+        const hands = ['n', 'e', 's', 'w'];
+        let suitCounter = 0;
+        let handCounter = 0;
+        for (let c = 0; c < ln.length; c++) {
+            if (!svData.deals[dl].hands[hands[handCounter]]) svData.deals[dl].hands[hands[handCounter]] = [];
+            if (!svData.deals[dl].hands[hands[handCounter]][suitCounter]) svData.deals[dl].hands[hands[handCounter]][suitCounter] = '';
+            if (ln[c] == ' ') {
+                handCounter++;
+                suitCounter = 0;
+                continue;
+            }
+            if (ln[c] == '.') {
+                suitCounter++;
+                continue;
+            }
+            svData.deals[dl].hands[hands[handCounter]][suitCounter] += ln[c];
+        }
+    };
+
+    document.getElementById('svLoadPbnButton').addEventListener('click', () => {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.onchange = () => {
+            const file = fileInput.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                const lines = reader.result.split('\n').map(line => line.trim()).filter(Boolean);
+                if (!lines[0].includes('PBN')) {
+                    showMessage('Väärä tiedostomuoto.');
+                    return;
+                }
+                //console.log('lines', lines);
+                svReset();
+                let readerMode = 'bracket';
+                let board = 0;
+                let buffer = [];
+                for (let i = 0; i < lines.length; i++) {
+                    if (lines[i].split(' ')[0] == '%') continue;
+                    if (readerMode == 'bracket') { 
+                        const ln = readBracket(lines[i]);
+                        if (!ln) {
+                            console.log('Line omitted: ', lines[i]);
+                        }
+                        console.log(ln);
+                        switch (ln[0]) {
+                            case 'Event':
+                                svData.event = ln[1];
+                                break;
+                            case 'Date':
+                                svData.date = ln[1];
+                                break;
+                            case 'Board':
+                                console.log(ln);
+                                board = parseInt(ln[1]);
+                                svData.deals[board] = {};
+                                break;
+                            case 'Dealer':
+                                if (ln[1] == 'N') svData.deals[board].dealer = "North";
+                                if (ln[1] == 'E') svData.deals[board].dealer = "East";
+                                if (ln[1] == 'S') svData.deals[board].dealer = "South";
+                                if (ln[1] == 'W') svData.deals[board].dealer = "West";
+                                break;
+                            case 'Vulnerable':
+                                if (ln[1] == 'NS') {
+                                    svData.deals[board].vul = 'N-S';
+                                    break;
+                                }
+                                if (ln[1] == 'EW') {
+                                    svData.deals[board].vul = 'E-W';
+                                    break;
+                                }
+                                svData.deals[board].vul = ln[1];
+                                break;
+                            case 'Deal':
+                                parsePbnDeal(board, ln[1]);
+                                break;
+                            case 'Scoring':
+                                svData.scoring = ln[1].split(';')[0];
+                                break;
+                            case 'Competition':
+                                svData.competition = ln[1];
+                                break;
+                            case 'ScoreTable':
+                            case 'TotalScoreTable':
+                            case 'OptimumResultTable':
+                                readerMode = 'buffer';
+                                buffer.push(ln[0]);
+                                buffer.push(ln[1]);
+                                continue;
+                            default:
+                                break;
+                        }
+                    }
+                    if (readerMode == 'buffer') {
+                        buffer.push(lines[i]);
+                        if (lines[i+1][0] == '[') {
+                            readerMode = 'bracket';
+                            handleBuffer(board, buffer);
+                        }
+                    }
+                }
+            };
+            reader.readAsText(file, 'ISO-8859-1');
+            console.log(svData);
+        };
+        fileInput.click();
     });
 }
 
