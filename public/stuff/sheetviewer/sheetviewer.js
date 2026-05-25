@@ -78,6 +78,7 @@ const renderPoints = (dealIn) => {
 
 const renderTricks = (dealIn) => {
     let divs = '';
+    console.log('debuggin', svData, 'deal', dealIn);
     for (let dirs = 0; dirs < svData.deals[dealIn].tricks.length; dirs++) {
         for (let r = 0; r < svData.deals[dealIn].tricks[dirs].length; r++) {
             divs += `<div>${svData.deals[dealIn].tricks[dirs][r]}</div>`;
@@ -184,6 +185,7 @@ const renderBoards = () => {
     //deal
     let dealHtml = '';
     for (let i = 1; i <= Object.keys(svData.deals).length; i++) {
+        console.log('BDSD', dealHtml);
         dealHtml += `
             <div class="svDealCard" data-index="${i}">
                 <div class="svGrid svDealBoardTop">
@@ -327,15 +329,45 @@ const handleBuffer = (dl, bf) => {
                 if (dat[r][8] != '-') svData.deals[dl].results[r].push(dat[r][8]); 
                 else svData.deals[dl].results[r].push('-' + dat[r][9]);
 
+                svData.deals[dl].results[r].push(dat[r][10]);
                 svData.deals[dl].results[r].push(dat[r][11]);
-                svData.deals[dl].results[r].push(dat[r][12]);
             }
+            break;
+        case 'OptimumResultTable':
+            const trickTable = [
+                ['W', '', '', '', '', ''],
+                ['N', '', '', '', '', ''],
+                ['E', '', '', '', '', ''],
+                ['S', '', '', '', '', ''],
+            ];
+            let tCounter = 5;
+            let tLine = 3;
+            for (let t = dat.length - 1; t >= 0; t--) {
+                let ti = tCounter;
+                if (tCounter == 1) ti = 4;
+                else if (tCounter == 2) ti = 3;
+                else if (tCounter == 3) ti = 2;
+                else if (tCounter == 4) ti = 1;
+                trickTable[tLine][ti] = dat[t][2];
+                tCounter--;
+                if (tCounter < 1) {
+                    tCounter = 5;
+                    tLine--;
+                }
+            }
+            const turnTable = [
+                trickTable[1],
+                trickTable[3],
+                trickTable[2],
+                trickTable[0]
+            ];
+            svData.deals[dl].tricks = turnTable;
             break;
         default:
             break;
     }
     
-    console.log('checkpoint: ', svData);
+    //console.log('checkpoint: ', svData);
     
     bf.splice(0, bf.length);
 };
@@ -473,8 +505,25 @@ export async function sheetViewer() {
 
     const parsePbnDeal = (dl, ln) => {
         svData.deals[dl].hands = {};
+        const direction = ln.split(':')[0];
         ln = ln.split(':')[1];
-        const hands = ['n', 'e', 's', 'w'];
+        let hands;
+        switch (direction) {
+            case 'N':
+                hands = ['n', 'e', 's', 'w'];
+                break;
+            case 'E':
+                hands = ['e', 's', 'w', 'n'];
+                break;
+            case 'S':
+                hands = ['s', 'w', 'n', 'e'];
+                break;
+            case 'W':
+                hands = ['w', 'n', 'e', 's'];
+                break;
+            default:
+                break;
+        }
         let suitCounter = 0;
         let handCounter = 0;
         for (let c = 0; c < ln.length; c++) {
@@ -506,19 +555,19 @@ export async function sheetViewer() {
                     showMessage('Väärä tiedostomuoto.');
                     return;
                 }
-                //console.log('lines', lines);
                 svReset();
                 let readerMode = 'bracket';
                 let board = 0;
+                let optimums = {};
                 let buffer = [];
                 for (let i = 0; i < lines.length; i++) {
+                    if (lines[i] == '') continue;
                     if (lines[i].split(' ')[0] == '%') continue;
                     if (readerMode == 'bracket') { 
                         const ln = readBracket(lines[i]);
                         if (!ln) {
                             console.log('Line omitted: ', lines[i]);
                         }
-                        console.log(ln);
                         switch (ln[0]) {
                             case 'Event':
                                 svData.event = ln[1];
@@ -527,7 +576,6 @@ export async function sheetViewer() {
                                 svData.date = ln[1];
                                 break;
                             case 'Board':
-                                console.log(ln);
                                 board = parseInt(ln[1]);
                                 svData.deals[board] = {};
                                 break;
@@ -557,6 +605,14 @@ export async function sheetViewer() {
                             case 'Competition':
                                 svData.competition = ln[1];
                                 break;
+                            case 'OptimumContract':
+                                if (!optimums[board]) optimums[board] = ['', ''];
+                                optimums[board][0] = ln[1];
+                                break;
+                            case 'OptimumScore':
+                                if (!optimums[board]) optimums[board] = ['', ''];    
+                                optimums[board][1] = ln[1];
+                                break;
                             case 'ScoreTable':
                             case 'TotalScoreTable':
                             case 'OptimumResultTable':
@@ -570,15 +626,26 @@ export async function sheetViewer() {
                     }
                     if (readerMode == 'buffer') {
                         buffer.push(lines[i]);
-                        if (lines[i+1][0] == '[') {
+                        if (!lines[i+1]) {
+                            handleBuffer(board, buffer);
+                            continue;
+                        }
+                        if (lines[i+1] == '') {
+                            readerMode = 'bracket';
+                            handleBuffer(board, buffer);
+                        } else if (lines[i+1][0] == '[') {
                             readerMode = 'bracket';
                             handleBuffer(board, buffer);
                         }
                     }
                 }
+                for (const [key, value] of Object.entries(optimums)) {
+                    svData.deals[key].optimum = value[0] + ' ' + value[1];
+                }
+                console.log(svData);
+                renderBoards();
             };
             reader.readAsText(file, 'ISO-8859-1');
-            console.log(svData);
         };
         fileInput.click();
     });
