@@ -78,7 +78,6 @@ const renderPoints = (dealIn) => {
 
 const renderTricks = (dealIn) => {
     let divs = '';
-    console.log('debuggin', svData, 'deal', dealIn);
     for (let dirs = 0; dirs < svData.deals[dealIn].tricks.length; dirs++) {
         for (let r = 0; r < svData.deals[dealIn].tricks[dirs].length; r++) {
             divs += `<div>${svData.deals[dealIn].tricks[dirs][r]}</div>`;
@@ -126,6 +125,7 @@ const renderCenter = (dealIn) => {
 };
 
 const renderResults = (dealIn) => {
+    if (!svData.deals[dealIn].results) return '';
     let brd = '';
 
     if (svSettings.selectedPair) {
@@ -185,7 +185,6 @@ const renderBoards = () => {
     //deal
     let dealHtml = '';
     for (let i = 1; i <= Object.keys(svData.deals).length; i++) {
-        console.log('BDSD', dealHtml);
         dealHtml += `
             <div class="svDealCard" data-index="${i}">
                 <div class="svGrid svDealBoardTop">
@@ -293,7 +292,6 @@ const handleBuffer = (dl, bf) => {
             headerData[counter] += header[c];
         }
     }
-    console.log('header: ', headerData, ' bf: ', bf);
 
     const tokenize = (row) => {
         return row.match(/"[^"]*"|\S+/g).map(x => x.replace(/^"|"$/g, ''));
@@ -334,34 +332,26 @@ const handleBuffer = (dl, bf) => {
             }
             break;
         case 'OptimumResultTable':
-            const trickTable = [
-                ['W', '', '', '', '', ''],
-                ['N', '', '', '', '', ''],
-                ['E', '', '', '', '', ''],
-                ['S', '', '', '', '', ''],
-            ];
-            let tCounter = 5;
-            let tLine = 3;
-            for (let t = dat.length - 1; t >= 0; t--) {
-                let ti = tCounter;
-                if (tCounter == 1) ti = 4;
-                else if (tCounter == 2) ti = 3;
-                else if (tCounter == 3) ti = 2;
-                else if (tCounter == 4) ti = 1;
-                trickTable[tLine][ti] = dat[t][2];
-                tCounter--;
-                if (tCounter < 1) {
-                    tCounter = 5;
-                    tLine--;
-                }
+            const suits = ['C', 'D', 'H', 'S', 'NT'];
+            const directions = ['N', 'S', 'E', 'W'];
+            const map = {};
+            for (const dir of directions) {
+                map[dir] = {
+                    C: null,
+                    D: null,
+                    H: null,
+                    S: null,
+                    NT: null
+                };
             }
-            const turnTable = [
-                trickTable[1],
-                trickTable[3],
-                trickTable[2],
-                trickTable[0]
-            ];
-            svData.deals[dl].tricks = turnTable;
+            for (const [dir, suit, tricks] of dat) {
+                map[dir][suit] = Number(tricks);
+            }
+            const result = directions.map(dir => [
+                dir,
+                ...suits.map(suit => map[dir][suit])
+            ]);
+            svData.deals[dl].tricks = result;
             break;
         default:
             break;
