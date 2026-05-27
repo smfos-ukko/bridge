@@ -161,7 +161,21 @@ button:active {
     align-items: center;
 }
 
-#logininputcontainer {}
+.club {
+    color: rgb(0, 152, 0);
+}
+
+.diamond {
+    color: rgb(191, 187, 0)
+}
+
+.heart {
+    color: red;
+}
+
+.spade {
+    color: black;
+}
 
 #loginbuttoncontainer {
     height: 100%;

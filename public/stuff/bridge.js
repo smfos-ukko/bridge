@@ -1,7 +1,7 @@
 import { loadSystems, unLoadSystems, systemSheet } from "./systemsheet/systemsheet.js";
 import { bidWriter } from "./bidwriter/bidwriter.js";
 import { movementEditor } from "./movementeditor/movementeditor.js";
-import { sheetViewer, setPair } from "./sheetviewer/sheetviewer.js";
+import { sheetViewer, setPair, loadComments } from "./sheetviewer/sheetviewer.js";
 
 const mainPage = document.getElementById('mainpage');
 const loginPanel = document.getElementById('loginslide');
@@ -12,6 +12,7 @@ const signupButton = document.getElementById('signupbutton');
 const loginMessage = document.getElementById('loginmessage');
 const welcomeText = document.getElementById('welcometext');
 const loadedPages = [];
+let cssLink;
 
 export async function api(action, data = null) {
     const API = window.location.origin + "/bridge/public/stuff/api.php";
@@ -71,6 +72,10 @@ const loadPage = async (page) => {
 }
 
 const openPage = (page) => {
+    cssLink = document.createElement('link');
+    cssLink.rel = 'stylesheet';
+    cssLink.href = `/bridge/public/stuff/${page}/${page}.css`;
+    document.head.appendChild(cssLink);
     mainPage.classList.remove('activated');
     let pe = document.getElementById(page);
     setTimeout(() => {
@@ -146,6 +151,7 @@ async function login() {
             authButton.innerText = 'Kirjaudu ulos';
             document.getElementById('loginslide').classList.remove('open');
             loadSystems();
+            loadComments();
             welcomeText.innerText = 'Hei ' + res.username + '!';
             authButton.innerText = 'Kirjaudu ulos';
         } else {
@@ -168,6 +174,7 @@ backButton.onclick = () => {
             mainPage.style.display = 'block';
             toolPage.style.display = 'none';
             backButton.style.display = 'none';
+            cssLink.remove();
         }, 100);
         setTimeout(() => {
             mainPage.classList.add('activated');

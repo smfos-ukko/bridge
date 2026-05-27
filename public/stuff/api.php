@@ -44,6 +44,15 @@ $db->exec("
         created_at TEXT,
         updated_at TEXT
     );
+
+    CREATE TABLE IF NOT EXISTS comments (
+        id INTEGER PRIMARY KEY,
+        user_id INTEGER,
+        name TEXT,
+        data TEXT,
+        created_at TEXT,
+        updated_at TEXT
+    );
 ");
 
 function jsonResponse($data, $code = 200) {
@@ -228,6 +237,91 @@ switch ($action) {
 
             jsonResponse(['status' => 'deleted']);
         }
+
+        break;
+
+    case 'saveComments':
+        $input = json_decode(file_get_contents('php://input'), true);
+
+        checkAuth($input);
+
+        $stmt = $db->prepare("SELECT * FROM comments WHERE user_id = ? AND name = ?");
+        $stmt->execute([$_SESSION['user_id'], $input['name']]);
+        $comment = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($comment) {
+            $stmt = $db->prepare("
+                UPDATE comments 
+                SET 
+                    data = ?,
+                    updated_at = datetime('now')
+                WHERE user_id = ? AND name = ?
+            ");
+            $stmt->execute([
+                json_encode($input['data']),
+                $_SESSION['user_id'],
+                $input['name']
+            ]);
+
+            jsonResponse(['status' => 'updated']);
+        } else {
+            $stmt = $db->prepare("
+                INSERT INTO comments (user_id, name, data, created_at, updated_at)
+                VALUES (?, ?, ?, datetime('now'), datetime('now'))
+            ");
+            $stmt->execute([
+                $_SESSION['user_id'],
+                $input['name'],
+                json_encode($input['data'])
+            ]);
+            jsonResponse(['status' => 'saved']);
+        }
+        break;
+
+    case 'loadComments':
+        $input = json_decode(file_get_contents('php://input'), true);
+
+        checkAuth($input);
+
+        $stmt = $db->prepare("
+            SELECT id, name, data, updated_at
+            FROM comments
+            WHERE user_id = ?
+            ORDER BY updated_at DESC
+        ");
+
+        $stmt->execute([$_SESSION['user_id']]);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($rows as &$row) {
+            $row['data'] = json_decode($row['data'], true);
+        }
+
+        jsonResponse($rows);
+        break;
+
+    case 'loadComment':
+        $input = json_decode(file_get_contents('php://input'), true);
+
+        $stmt = $db->prepare("
+            SELECT id, name, data, updated_at
+            FROM comments
+            WHERE id = ?
+            ORDER BY updated_at DESC
+        ");
+
+        $stmt->execute([$input['id']]);
+        $comment = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($comment) {
+            jsonResponse(json_decode($comment, true));
+        } else {
+            jsonResponse(['error' => 'not found'], 400);
+        }
+
+        break;
+
+    case 'deleteComment':
 
         break;
 

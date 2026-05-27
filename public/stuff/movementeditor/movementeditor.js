@@ -1,7 +1,6 @@
 import { showMessage } from "../bridge.js";
 
 const movementData = {};
-const pageHtml = {};
 const pageSettings = {
     loaded: false,
     selectedPage: 1,
@@ -18,10 +17,18 @@ const changePage = (dir) => {
     if (dir == 'next') {
         if (pageSettings.selectedPage < movementData.numberOfTables) pageSettings.selectedPage++;
         pageChanged = true;
-    }  
+    } 
+    if (dir == 'this') pageChanged = true; 
     if (pageChanged) {
-        document.getElementById('mvPaper').innerHTML = pageHtml[pageSettings.selectedPage];
-        document.getElementById('selectedPageIndicator').innerHTML = '<span>' + pageSettings.selectedPage + '</span>';
+        const pgs = document.getElementsByClassName('mvPaper');
+        for (let pg of pgs) {
+            pg.style.display = 'none';
+            if (pg.getAttribute('data-index') == pageSettings.selectedPage) pg.style.display = 'flex';
+        }
+        const indicator = document.getElementById('selectedPageIndicator');
+        if (indicator) {
+            indicator.innerHTML = `<span>${pageSettings.selectedPage}</span>`;
+        }
         scaleTable();
     }
 };
@@ -84,7 +91,7 @@ const updateMovement = () => {
         }
     }
     
-    //define default movement
+    //define default movement & exceptions
     for (let tbl = 1; tbl <= movementData.numberOfTables; tbl++) {
         const transitionCounts = {
             NS: {},
@@ -119,40 +126,114 @@ const updateMovement = () => {
         movementData.transfers[tbl].EWdefault = maxKey;
         movementData.transfers[tbl].EWdefaultArr = maxKey.split(' ');
         //console.log(transitionCounts, maxKey, maxCount, movementData);
-
-        //paikallaan olevat
-        let stayNS, stayEW;
-        for (let t = 1; t <= movementData.numberOfTables; t++) {
-            stayNS = [];
-            stayEW = [];
-            for (let r = 1; r <= movementData.numberOfRounds; r++) {
-                const movN = movementData.tables[t][r][0];
-                const movE = movementData.tables[t][r][1];
-                if (!stayNS.includes(movN)) stayNS.push(movN);
-                if (!stayEW.includes(movE)) stayEW.push(movE);
-            }
-            if (stayNS.length == 1) movementData.transfers[t].NSdefault = '';
-            if (stayEW.length == 1) movementData.transfers[t].EWdefault = '';
-        }
     }
 
+    //paikallaan olevat
+    let stayNS, stayEW;
+    for (let t = 1; t <= movementData.numberOfTables; t++) {
+        stayNS = [];
+        stayEW = [];
+        for (let r = 1; r <= movementData.numberOfRounds; r++) {
+            const movN = movementData.tables[t][r][0];
+            const movE = movementData.tables[t][r][1];
+            if (!stayNS.includes(movN)) stayNS.push(movN);
+            if (!stayEW.includes(movE)) stayEW.push(movE);
+        }
+        if (stayNS.length == 1) movementData.transfers[t].NSdefault = '';
+        if (stayEW.length == 1) movementData.transfers[t].EWdefault = '';
+    }
+
+    //poikkeukset
+    for (let t = 1; t <= movementData.numberOfTables; t++) {
+        const nsex = [];
+        const ewex = [];
+        for (let r = 1; r < movementData.numberOfRounds; r++) {
+            const nstt = Number(movementData.transfers[t][r][0]);
+            const nsdt = Number(movementData.transfers[t].NSdefaultArr[1]);
+            const nstd = movementData.transfers[t][r][1];
+            const nsdd = movementData.transfers[t].NSdefaultArr[2];
+            const ewtt = Number(movementData.transfers[t][r][2]);
+            const ewdt = Number(movementData.transfers[t].EWdefaultArr[1]);
+            const ewtd = movementData.transfers[t][r][3];
+            const ewdd = movementData.transfers[t].EWdefaultArr[2];
+            if (nstt == nsdt && nstd == nsdd) {} else {
+                nsex.push([r, nstt, nstd, `→${nstt} ${nstd}`]);
+            }
+            if (ewtt == ewdt && ewtd == ewdd) {} else {
+                ewex.push([r, ewtt, ewtd, `→${ewtt} ${ewtd}`]);
+            }
+        }
+        movementData.transfers[t].NSexceptions = nsex;
+        movementData.transfers[t].EWexceptions = ewex;
+    }
+    console.log('cp', movementData);
+
     renderMovement();
+    changePage('this');
     updateTools();
 };
 
-const scaleTable = () => {
-    const mtMain = document.getElementsByClassName('mtMain')[0];
-    const maxHeight = 390;
-    const actualHeight = mtMain.scrollHeight;
-    if (actualHeight > maxHeight) {
-        const scale = maxHeight / actualHeight;
-        mtMain.style.transform = `scale(${scale})`;
+const printScaleTable = () => {
+    const targetHeight = 350;
+    const numberOfTableRows = movementData.numberOfRounds + 1;
+    const tableHeight = document.getElementsByClassName('mtMain')[0].scrollHeight;
+    if (!tableHeight) return;
+    if (tableHeight > targetHeight) {
+        const scale = targetHeight / tableHeight;
+        document.documentElement.style.setProperty('--print-scale', scale);
+        console.log('scaled', scale);
+    } else {
+        document.documentElement.style.setProperty('--print-scale', 1);
     }
+};
+window.addEventListener('beforeprint', printScaleTable)
+
+const scaleTable = () => {
+    /*
+    const mtMain = document.getElementsByClassName('mtMain');
+    for (let mtm of mtMain) {
+        const maxHeight = 390;
+        const actualHeight = mtm.scrollHeight;
+        if (actualHeight > maxHeight) {
+            const scale = maxHeight / actualHeight;
+            mtm.style.transform = `scale(${scale})`;
+        }
+    }
+        */
+};
+
+const determineMovement = (t, r, dir) => {
+    const standard = movementData.tables[t][r][dir];
+    if (dir == 0) {
+        if (movementData.transfers[t].NSexceptions.length == 0) return standard;
+        for (let i = 0; i < movementData.transfers[t].NSexceptions.length; i++) {
+            if (movementData.transfers[t].NSexceptions[i][0] == r) {
+                let ret = '<span class="yellowize">';
+                ret += movementData.tables[t][r][dir];
+                ret += movementData.transfers[t].NSexceptions[i][3];
+                ret += '</span>'
+                return ret;
+            }
+        }
+    } else if (dir == 1) {
+        if (movementData.transfers[t].EWexceptions.length == 0) return standard;
+        for (let i = 0; i < movementData.transfers[t].EWexceptions.length; i++) {
+            if (movementData.transfers[t].EWexceptions[i][0] == r) {
+                let ret = '<span class="yellowize">';
+                ret += movementData.tables[t][r][dir];
+                ret += movementData.transfers[t].EWexceptions[i][3];
+                ret += '</span>'
+                return ret;
+            }
+        }
+    }
+    return standard;
 };
 
 const renderMovement = () => {
-    const mvPaper = document.getElementById('mvPaper');
+    const mvView = document.getElementById('mvView');
     let isOdd = true;
+    let mov = '';
 
     for (let p = 1; p <= movementData.numberOfTables; p++) {
         //draw table
@@ -165,35 +246,40 @@ const renderMovement = () => {
         `;
         for (let r = 1; r <= movementData.numberOfRounds; r++) {
             movementTable += `<div class="mtCell ${isOdd ? 'mtOdd' : 'mtEven'} movTableRound">` + r + '</div>';
-            movementTable += `<div class="mtCell ${isOdd ? 'mtOdd' : 'mtEven'} movTableNS">` + movementData.tables[p][r][0] + '</div>';
-            movementTable += `<div class="mtCell ${isOdd ? 'mtOdd' : 'mtEven'} movTableEW">` + movementData.tables[p][r][1] + '</div>';
+            movementTable += `<div class="mtCell ${isOdd ? 'mtOdd' : 'mtEven'} movTableNS">` + determineMovement(p, r, 0) + '</div>';
+            movementTable += `<div class="mtCell ${isOdd ? 'mtOdd' : 'mtEven'} movTableEW">` + determineMovement(p, r, 1) + '</div>';
             movementTable += `<div class="mtCell ${isOdd ? 'mtOdd' : 'mtEven'} movTableDeals">` + defineDeals(movementData.tables[p][r][2]) + '</div>';
             isOdd ? isOdd = false : isOdd = true;
         }
         movementTable += '</div>';
 
         //draw paper
-        let mov = `
-            <div class="movTop movSegment">
-                <div class="movTableNumber movNumWest"><h1>${p}</h1></div>
-                <div class="movNS movDefaultTransfer movNorth"><h2>N</h2><span>${movementData.transfers[p].NSdefault}</span></div>
-                <div class="movTableNumber movNumNorth"><h1>${p}</h1></div>
-            </div>
-            <div class="movMid movSegment">
-                <div class="movEW movDefaultTransfer movWest"><h2>W</h2><span>${movementData.transfers[p].EWdefault}</span></div>
-                <div class="movTransferTable">${movementTable}</div>
-                <div class="movEW movDefaultTransfer movEast"><h2>E</h2><span>${movementData.transfers[p].EWdefault}</span></div>
-            </div>
-            <div class="movBot movSegment">
-                <div class="movTableNumber movNumSouth"><h1>${p}</h1></div>
-                <div class="movNS movDefaultTransfer movSouth"><h2>S</h2><span>${movementData.transfers[p].NSdefault}</span></div>
-                <div class="movTableNumber movNumEast"><h1>${p}</h1></div>
+        mov += `
+            <div class="mvPaper" data-index="${p}">
+                <div class="movTop movSegment">
+                    <div class="movTableNumber movNumWest"><h1>${p}</h1></div>
+                    <div class="movNS movDefaultTransfer movNorth"><h2>N</h2><span>${movementData.transfers[p].NSdefault}</span></div>
+                    <div class="movTableNumber movNumNorth"><h1>${p}</h1></div>
+                </div>
+                <div class="movMid movSegment">
+                    <div class="movEW movDefaultTransfer movWest"><h2>W</h2><span>${movementData.transfers[p].EWdefault}</span></div>
+                    <div class="movTransferTable">${movementTable}</div>
+                    <div class="movEW movDefaultTransfer movEast"><h2>E</h2><span>${movementData.transfers[p].EWdefault}</span></div>
+                </div>
+                <div class="movBot movSegment">
+                    <div class="movTableNumber movNumSouth"><h1>${p}</h1></div>
+                    <div class="movNS movDefaultTransfer movSouth"><h2>S</h2><span>${movementData.transfers[p].NSdefault}</span></div>
+                    <div class="movTableNumber movNumEast"><h1>${p}</h1></div>
+                </div>
             </div>
         `;
-        pageHtml[p] = mov;
     }
 
-    mvPaper.innerHTML = pageHtml[pageSettings.selectedPage];
+    mvView.innerHTML = mov;
+    let yellows = document.getElementsByClassName('yellowize');
+    for (let y of yellows) {
+        y.parentNode.style.backgroundColor = '#fffb00';
+    }
     scaleTable();
 };
 

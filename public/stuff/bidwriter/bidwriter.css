@@ -20,22 +20,6 @@
     min-height: 10px;
 }
 
-.club {
-    color: rgb(0, 152, 0);
-}
-
-.diamond {
-    color: rgb(191, 187, 0)
-}
-
-.heart {
-    color: red;
-}
-
-.spade {
-    color: black;
-}
-
 .dbl {
     display: inline-block;
     color: white;

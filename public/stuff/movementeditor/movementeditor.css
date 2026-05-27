@@ -26,7 +26,7 @@
     flex-direction: column;
 }
 
-#mvPaper {
+.mvPaper {
     background-color: white;
     position: relative;
     flex-direction: column;
@@ -40,8 +40,8 @@
     */
 }
 
-#mvPaper,
-#mvPaper * {
+.mvPaper,
+.mvPaper * {
     box-sizing: border-box;
 }
 
@@ -193,6 +193,10 @@
     border-right: none;
 }
 
+.yellowize {
+    background-color: #fffb00;
+}
+
 @media (min-width: 631px) {
     #mvMain {
         flex-direction: row;
@@ -210,7 +214,63 @@
         border-radius: 10px;
     }
 
-    #mvPaper {
+    .mvPaper {
         height: 70dvh;
+    }
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    * {
+        overflow: visible !important;
+    }
+
+    .slidedown,
+    .slidedown.open,
+    .subpage,
+    .subpage.activated,
+    #generalMessage {
+        transform: none !important;
+    }
+
+    #mvView * {
+        visibility: visible;
+    }
+
+    #mvView {
+        position: absolute;
+        top: 0;
+        left: 0;
+        padding: 0;
+    }
+
+    .mvPaper {
+        width: 210mm;
+        height: 297mm;
+        display: flex !important;
+    }
+
+    #loginslide {
+        overflow: visible;
+    }
+
+    .movTableNumber h1 {
+        font-size: 30mm;
+    }
+
+    .movDefaultTransfer h2 {
+        font-size: 20mm;
+    }
+
+    .movDefaultTransfer span {
+        font-size: 10mm;
+    }
+
+    .mtMain {
+        font-size: 200%;
+        transform: scale(var(--print-scale));
     }
 }

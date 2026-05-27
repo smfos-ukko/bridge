@@ -1,5 +1,6 @@
 import { showMessage } from "../bridge.js";
 import { pbnReader } from "../pbnreader.js";
+import { api } from "../bridge.js";
 
 let svData = {
     pairs: {},
@@ -9,6 +10,7 @@ const svSettings = {
     selectedDeal: 1,
     selectedPair: null
 };
+const commentStorage = [];
 
 const trimLine = (trln) => {
     if (!trln) return null;
@@ -417,7 +419,22 @@ export const setPair = (pairToSet) => {
     }, 1500); 
 };
 
+export const loadComments = async () => {
+    if (!sessionStorage.getItem('user') || !sessionStorage.getItem('token')) return;
+    const token = sessionStorage.getItem('token');
+    if (!token) {
+        showMessage('Token not set.');
+        return;
+    }
+    const res = await api('loadComments', { token });
+    console.log('loadcomments ', res);
+};
+
 document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowRight') switchDeal('next');
     if (e.key === 'ArrowLeft') switchDeal('prev');
 });
+
+if (sessionStorage.getItem('user') && commentStorage.length == 0) {
+    loadComments();
+}
