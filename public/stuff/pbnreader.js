@@ -1,6 +1,13 @@
-const pbnData = {
+let pbnData = {
     pairs: {},
     deals: {}
+};
+
+const pbnReset = () => {
+    pbnData = {
+        pairs: {},
+        deals: {}
+    };
 };
 
 const handleBuffer = (dl, bf) => {
@@ -43,23 +50,28 @@ const handleBuffer = (dl, bf) => {
             }
             break;
         case 'ScoreTable':
-            // 0table 1round 2pairid_ns 3pairid_ew 4contract 5declarer 6result 7lead 8score_ns 9score_ew
-            // 10MP_NS 11MP_EW 11percentagens 12 percentageew
+            const getValue = (row, field, fallback = '--') => {
+                const idx = headerData.indexOf(field);
+                if (idx === -1) return fallback;
+                const value = row[idx];
+                return (value === undefined || value === null || value === '') ? fallback : value;
+            };
             pbnData.deals[dl].results = [];
             for (let r = 0; r < dat.length; r++) {
-                pbnData.deals[dl].results[r] = [];
-                pbnData.deals[dl].results[r].push(dat[r][2]);
-                pbnData.deals[dl].results[r].push(dat[r][3]);
-                pbnData.deals[dl].results[r].push(dat[r][4]);
-                pbnData.deals[dl].results[r].push(dat[r][5]);
-                pbnData.deals[dl].results[r].push(dat[r][6]);
-                pbnData.deals[dl].results[r].push(dat[r][7]);
-
-                if (dat[r][8] != '-') pbnData.deals[dl].results[r].push(dat[r][8]); 
-                else pbnData.deals[dl].results[r].push('-' + dat[r][9]);
-
-                pbnData.deals[dl].results[r].push(dat[r][10]);
-                pbnData.deals[dl].results[r].push(dat[r][11]);
+                const row = dat[r];
+                const scoreNS = getValue(row, 'Score_NS', '-');
+                const scoreEW = getValue(row, 'Score_EW', '-');
+                pbnData.deals[dl].results[r] = [
+                    getValue(row, 'PairId_NS'),
+                    getValue(row, 'PairId_EW'),
+                    getValue(row, 'Contract'),
+                    getValue(row, 'Declarer'),
+                    getValue(row, 'Result'),
+                    getValue(row, 'Lead'),
+                    scoreNS !== '-' ? scoreNS : '-' + scoreEW,
+                    getValue(row, 'MP_NS'),
+                    getValue(row, 'MP_EW')
+                ];
             }
             break;
         case 'OptimumResultTable':
@@ -146,6 +158,7 @@ export const pbnReader = () => {
             if (!file) return;
             const reader = new FileReader();
             reader.onload = () => {
+                pbnReset();
                 const lines = reader.result.split('\n').map(line => line.trim()).filter(Boolean);
                 if (!lines[0].includes('PBN')) {
                     showMessage('Väärä tiedostomuoto.');
@@ -157,7 +170,7 @@ export const pbnReader = () => {
                 let buffer = [];
                 for (let i = 0; i < lines.length; i++) {
                     if (lines[i] == '') continue;
-                    if (lines[i].split(' ')[0] == '%') continue;
+                    if (lines[i][0] == '%') continue;
                     if (readerMode == 'bracket') { 
                         const ln = readBracket(lines[i]);
                         if (!ln) {

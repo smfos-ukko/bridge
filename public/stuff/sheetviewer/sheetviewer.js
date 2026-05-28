@@ -156,7 +156,7 @@ const renderResults = (dealIn) => {
         for (let s = 0; s < svData.deals[dealIn].results[r].length; s++) {
             if (s < 2) {
                 const plNum = svData.deals[dealIn].results[r][s];
-                brd += `<div data-index="${svData.deals[dealIn].results[r][s]}" class="svPlayerPair ${svData.deals[dealIn].results[r][s] == svSettings.selectedPair ? 'svSelectedPair' : ''} svDealResultsBoardCell${r % 2 == 0 ? ' svEven' : ' svOdd'}">${svData.pairs[plNum]}</div>`;
+                brd += `<div data-index="${svData.deals[dealIn].results[r][s]}" class="svPlayerPair ${svData.deals[dealIn].results[r][s] == svSettings.selectedPair ? 'svSelectedPair' : ''} svDealResultsBoardCell${r % 2 == 0 ? ' svEven' : ' svOdd'}">${svData.pairs[plNum] ? svData.pairs[plNum] : '--'}</div>`;
                 continue;
             }
             brd += `<div class="svDealResultsBoardCell${r % 2 == 0 ? ' svEven' : ' svOdd'}">${svData.deals[dealIn].results[r][s]}</div>`;
