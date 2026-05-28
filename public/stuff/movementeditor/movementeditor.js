@@ -4,7 +4,8 @@ const movementData = {};
 const pageSettings = {
     loaded: false,
     selectedPage: 1,
-    sharedBoards: false
+    sharedBoards: false,
+    info: null
 };
 let movementTools;
 
@@ -29,7 +30,6 @@ const changePage = (dir) => {
         if (indicator) {
             indicator.innerHTML = `<span>${pageSettings.selectedPage}</span>`;
         }
-        scaleTable();
     }
 };
 
@@ -42,10 +42,23 @@ const updateTools = () => {
             <div id="selectedPageIndicator"><span>1</span></div>
             <button id="movNextButton">⯈</button> 
         </div>
+        <div class="toolSection">
+            <h3>Lisätiedot</h3>
+            <input type="text" id="movInfoInput">
+            <button id="updateInfoButton">Syötä</button>
+        </div>
+        <div class="toolSection">
+            <button id="updateScaleButton">Päivitä skaalaus</button>
+        </div>
     `;
     movementTools.innerHTML = toolHtml;
     document.getElementById('movPrevButton').addEventListener('click', () => {changePage('prev')});
     document.getElementById('movNextButton').addEventListener('click', () => {changePage('next')});
+    document.getElementById('updateInfoButton').addEventListener('click', () => {
+        pageSettings.info = document.getElementById('movInfoInput').value;
+        renderMovement();
+    });
+    document.getElementById('updateScaleButton').addEventListener('click', () => {scaleTable()});
 };
 
 const decodeDeal = (letter) => {
@@ -70,9 +83,13 @@ const findSeat = (player, round) => {
 };
 
 const defineDeals = (dealSet) => {
-    const lastDeal = movementData.dealsPerRound * dealSet;
+    const lastDeal = movementData.dealsPerRound * dealSet[2];
     const firstDeal = lastDeal - movementData.dealsPerRound + 1;
-    return `${firstDeal}-${lastDeal}`;
+    if (movementData.dealsPerRound == 1) {
+        return firstDeal;
+    } else {
+        return `${firstDeal}-${lastDeal}${dealSet[3] ? '*' : ''}`;
+    }
 };
 
 const updateMovement = () => {
@@ -128,6 +145,20 @@ const updateMovement = () => {
         //console.log(transitionCounts, maxKey, maxCount, movementData);
     }
 
+    //define shared deals
+    for (let tbl = 1; tbl <= movementData.numberOfTables; tbl++) {
+        for (let rnd = 1; rnd <= movementData.numberOfRounds; rnd++) {
+            for (let ot = 1; ot <= movementData.numberOfTables; ot++) { 
+                if (tbl == ot) continue;
+                if (movementData.tables[ot][rnd][2] == movementData.tables[tbl][rnd][2]) {
+                    if (!movementData.tables[tbl][rnd][3]) movementData.tables[tbl][rnd][3] = [];
+                    movementData.tables[tbl][rnd][3].push(ot);
+                    pageSettings.info = '* samat jaot toisen pöydän kanssa';
+                }
+            }
+        }
+    }
+
     //paikallaan olevat
     let stayNS, stayEW;
     for (let t = 1; t <= movementData.numberOfTables; t++) {
@@ -157,10 +188,10 @@ const updateMovement = () => {
             const ewtd = movementData.transfers[t][r][3];
             const ewdd = movementData.transfers[t].EWdefaultArr[2];
             if (nstt == nsdt && nstd == nsdd) {} else {
-                nsex.push([r, nstt, nstd, `→${nstt} ${nstd}`]);
+                nsex.push([r, nstt, nstd, `<span class="movExSpan">→${nstt} ${nstd}</span>`]);
             }
             if (ewtt == ewdt && ewtd == ewdd) {} else {
-                ewex.push([r, ewtt, ewtd, `→${ewtt} ${ewtd}`]);
+                ewex.push([r, ewtt, ewtd, `<span class="movExSpan">→${ewtt} ${ewtd}</span>`]);
             }
         }
         movementData.transfers[t].NSexceptions = nsex;
@@ -169,11 +200,12 @@ const updateMovement = () => {
     console.log('cp', movementData);
 
     renderMovement();
-    changePage('this');
     updateTools();
+    scaleTable();
 };
 
 const printScaleTable = () => {
+    /*
     const targetHeight = 350;
     const numberOfTableRows = movementData.numberOfRounds + 1;
     const tableHeight = document.getElementsByClassName('mtMain')[0].scrollHeight;
@@ -185,21 +217,26 @@ const printScaleTable = () => {
     } else {
         document.documentElement.style.setProperty('--print-scale', 1);
     }
+        */
 };
 window.addEventListener('beforeprint', printScaleTable)
 
 const scaleTable = () => {
-    /*
-    const mtMain = document.getElementsByClassName('mtMain');
-    for (let mtm of mtMain) {
-        const maxHeight = 390;
-        const actualHeight = mtm.scrollHeight;
-        if (actualHeight > maxHeight) {
-            const scale = maxHeight / actualHeight;
-            mtm.style.transform = `scale(${scale})`;
-        }
+    const mtMain = document.getElementsByClassName('mtMain')[0];
+    const maxHeight = 700;
+    let iterationCounter = 0;
+    let fontSize = 7.1;
+    document.documentElement.style.setProperty('--dynamic-size', `${fontSize}mm`);
+    document.documentElement.style.setProperty('--dynamic-ex', `${fontSize < 4.1 ? fontSize : fontSize - 2}mm`);
+    let overflow = true;
+    while (overflow && iterationCounter < 100) {
+        console.log('mtm scrollH, counter, fontsize', mtMain.scrollHeight, iterationCounter, fontSize);
+        if (mtMain.scrollHeight <= maxHeight) overflow = false;
+        fontSize -= 0.1;
+        document.documentElement.style.setProperty('--dynamic-size', `${fontSize}mm`);
+        document.documentElement.style.setProperty('--dynamic-ex', `${fontSize < 4.1 ? fontSize : fontSize - 2}mm`);
+        iterationCounter++;
     }
-        */
 };
 
 const determineMovement = (t, r, dir) => {
@@ -248,9 +285,10 @@ const renderMovement = () => {
             movementTable += `<div class="mtCell ${isOdd ? 'mtOdd' : 'mtEven'} movTableRound">` + r + '</div>';
             movementTable += `<div class="mtCell ${isOdd ? 'mtOdd' : 'mtEven'} movTableNS">` + determineMovement(p, r, 0) + '</div>';
             movementTable += `<div class="mtCell ${isOdd ? 'mtOdd' : 'mtEven'} movTableEW">` + determineMovement(p, r, 1) + '</div>';
-            movementTable += `<div class="mtCell ${isOdd ? 'mtOdd' : 'mtEven'} movTableDeals">` + defineDeals(movementData.tables[p][r][2]) + '</div>';
+            movementTable += `<div class="mtCell ${isOdd ? 'mtOdd' : 'mtEven'} movTableDeals">` + defineDeals(movementData.tables[p][r]) + '</div>';
             isOdd ? isOdd = false : isOdd = true;
         }
+        movementTable += '<div class="mtInfo"></div>';
         movementTable += '</div>';
 
         //draw paper
@@ -273,6 +311,7 @@ const renderMovement = () => {
                 </div>
             </div>
         `;
+        isOdd = true;
     }
 
     mvView.innerHTML = mov;
@@ -280,7 +319,18 @@ const renderMovement = () => {
     for (let y of yellows) {
         y.parentNode.style.backgroundColor = '#fffb00';
     }
-    scaleTable();
+    const infoCell = document.getElementsByClassName('mtInfo');
+    for (let iCell of infoCell) {
+        iCell.textContent = pageSettings.info;
+    }
+    console.log(pageSettings);
+    if (!pageSettings.info) {
+        document.documentElement.style.setProperty('--info-padding', '0px');
+    }
+    else {
+        document.documentElement.style.setProperty('--info-padding', '5px');
+    }
+    changePage('this');
 };
 
 export function movementEditor() {
@@ -340,6 +390,8 @@ export function movementEditor() {
 
                     console.log(file, movementData, lines);
                     pageSettings.loaded = true;
+                    pageSettings.info = null;
+                    pageSettings.selectedPage = 1;
                     updateMovement();
                 }
 
