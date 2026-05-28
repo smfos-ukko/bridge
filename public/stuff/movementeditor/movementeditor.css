@@ -264,11 +264,6 @@
     font-size: 10mm;
 }
 
-.mtMain {
-    /*transform: scale(var(--print-scale));*/
-    /*font-size: 7mm;*/
-}
-
 @media (min-width: 631px) {
     #mvMain {
         flex-direction: row;
@@ -352,10 +347,5 @@
 
     .movDefaultTransfer span {
         font-size: 10mm;
-    }
-
-    .mtMain {
-        /*transform: scale(var(--print-scale));*/
-        /*font-size: 7mm;*/
     }
 }
