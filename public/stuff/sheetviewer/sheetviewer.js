@@ -10,7 +10,7 @@ const svSettings = {
     selectedDeal: 1,
     selectedPair: null
 };
-const commentStorage = [];
+let commentStorage = {};
 
 const trimLine = (trln) => {
     if (!trln) return null;
@@ -419,6 +419,46 @@ export const setPair = (pairToSet) => {
     }, 1500); 
 };
 
+const initCommentTools = () => {
+    setTimeout(() => {
+        const commentOuter = document.getElementById('commentOuter');
+        const toolCard = `
+            <div id="svToolCard" class="flex-col align-center">
+                <h3>Kommentit</h3>
+                <div id="loadedCommentsContainer"></div>
+                <button id="addCommentButton">Lisää kommentti</button>
+                <div id="commentToolsContainer"></div>
+            </div>
+        `;
+        commentOuter.innerHTML = toolCard;
+        document.getElementById('addCommentButton').addEventListener('click', () => {
+            const dc = document.querySelector(`.svDealCard[data-index="${svSettings.selectedDeal}"] .svGrid`);
+            const html = `<div class="svCommentCard" data-index="${svSettings.selectedDeal}">
+            </div>`;
+            const injection = document.createElement('div');
+            injection.classList.add('svCommentField');
+            injection.innerHTML = html;
+            dc.after(injection);
+        });
+    }, 1000);
+};
+
+export const saveComments = async () => {
+    if (!sessionStorage.getItem('user') || !sessionStorage.getItem('token')) {
+        showMessage('Kirjaudu sisään tallentaaksesi kommentteja.');
+        return;
+    }
+    const token = sessionStorage.getItem('token');
+    if (!token) {
+        showMessage('Token not set.');
+        return;
+    }
+    const res = await api('saveComments', { token, name: 'TODO name', data: commentStorage });
+    console.log('saveComments', res.status);
+    if (res.status == 'saved' || res.status == 'updated') showMessage('Tallennettu.');
+    else showMessage('Virhe!', 'red');
+};
+
 export const loadComments = async () => {
     if (!sessionStorage.getItem('user') || !sessionStorage.getItem('token')) return;
     const token = sessionStorage.getItem('token');
@@ -428,6 +468,8 @@ export const loadComments = async () => {
     }
     const res = await api('loadComments', { token });
     console.log('loadcomments ', res);
+    if (renderDeal.data) commentStorage = JSON.parse(res.data);
+    initCommentTools();
 };
 
 document.addEventListener('keydown', (e) => {
@@ -435,6 +477,6 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowLeft') switchDeal('prev');
 });
 
-if (sessionStorage.getItem('user') && commentStorage.length == 0) {
+if (sessionStorage.getItem('user') && Object.keys(commentStorage).length == 0) {
     loadComments();
 }

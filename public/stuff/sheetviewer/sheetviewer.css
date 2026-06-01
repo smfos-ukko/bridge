@@ -2,6 +2,10 @@
     position: relative;
 }
 
+.toolContainer {
+    min-height: 100vh;
+}
+
 #svShareButton {
     display: none;
 }
