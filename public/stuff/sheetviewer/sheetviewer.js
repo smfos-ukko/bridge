@@ -419,6 +419,33 @@ export const setPair = (pairToSet) => {
     }, 1500); 
 };
 
+const addBidBox = () => {
+    let standardBids = '';
+    let specialBids = '';
+    const suits = ['♣', '♦', '♥', '♠', 'NT'];
+    const cns = ['club', 'diamond', 'heart', 'spade', 'notrump'];
+    for (let level = 1; level <= 7; level++) {
+        for (let suit = 0; suit < 5; suit++) {
+            standardBids += `<div class="svBidSlip" data-suit="${suit}" 
+                data-level="${level}">${level} <span class="${cns[suit]}">${suits[suit]}</span></div>`;
+        }
+    }
+    specialBids += '<div class="svBidSlip svSpecSlip svPassSlip">Pass</div>';
+    specialBids += '<div class="svBidSlip svSpecSlip svDblSlip">X</div>';
+    specialBids += '<div class="svBidSlip svSpecSlip svRdblSlip">XX</div>';    
+    const bidBox = `
+        <div class="svBidBox">
+            <div class="svStandardBids">
+                ${standardBids}
+            </div>
+            <div class="svSpecialBids flex-row">
+                ${specialBids}
+            </div>
+        </div>
+    `;
+    return bidBox;
+};
+
 const initCommentTools = () => {
     setTimeout(() => {
         const commentOuter = document.getElementById('commentOuter');
@@ -434,13 +461,14 @@ const initCommentTools = () => {
         document.getElementById('addCommentButton').addEventListener('click', () => {
             const dc = document.querySelector(`.svDealCard[data-index="${svSettings.selectedDeal}"] .svGrid`);
             const html = `<div class="svCommentCard" data-index="${svSettings.selectedDeal}">
+                ${addBidBox()}
             </div>`;
             const injection = document.createElement('div');
             injection.classList.add('svCommentField');
             injection.innerHTML = html;
             dc.after(injection);
         });
-    }, 1000);
+    }, 1500);
 };
 
 export const saveComments = async () => {

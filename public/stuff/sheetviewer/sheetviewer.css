@@ -129,6 +129,50 @@
     background-color: #23026c;
 }
 
+.svCommentField {
+    width: 100%;
+    background-color: #3f3570;
+    padding: 10px;
+}
+
+.svBidBox {
+    background-color: #0d0c35;
+    padding: 5px;
+    border-radius: 10px;
+    max-width: 220px;
+}
+
+.svStandardBids {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+}
+
+.svBidSlip {
+    background-color: #e2e2e2;
+    margin: 2px;
+    color: black;
+    padding: 2px;
+    text-align: center;
+    border-radius: 3px;
+}
+
+.svSpecSlip {
+    color: white;
+    width: 100%;
+}
+
+.svPassSlip {
+    background-color: green;
+}
+
+.svDblSlip {
+    background-color: red;
+}
+
+.svRdblSlip {
+    background-color: blue;
+}
+
 @media (max-width: 630px) {
     #svMain {
         margin-top: 15px;
