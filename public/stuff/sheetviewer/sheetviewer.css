@@ -6,6 +6,17 @@
     min-height: 100vh;
 }
 
+#svToolCard {
+    background-color: #3f3570;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 10px;
+}
+
+#svToolCard h3 {
+    margin-right: 0;
+}
+
 #svShareButton {
     display: none;
 }
@@ -140,6 +151,7 @@
     padding: 5px;
     border-radius: 10px;
     max-width: 220px;
+    margin-right: 10px;
 }
 
 .svStandardBids {
@@ -171,6 +183,63 @@
 
 .svRdblSlip {
     background-color: blue;
+}
+
+.svBidViewContainer {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    height: fit-content;
+    background-color: #e2e2e2;
+    color: black;
+    border: 5px black solid;
+    border-radius: 5px;
+}
+
+.svBidBlock:not(:nth-child(4n)) {
+    border-right: 1px black solid;
+}
+
+.svNonVul {
+    background-color: #00c903;
+}
+
+.svBidTypePass {
+    color: green;
+    font-size: small;
+}
+
+.svBidTypeDbl {
+    color: red;
+}
+
+.svBidTypeRdbl {
+    color: blue;
+}
+
+.svCancelSlip {
+    background-color: #c79b18;
+}
+
+.svBidBlock {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 40px;
+    min-height: 30px;
+}
+
+.svCommentEditor {
+    min-width: 400px;
+}
+
+.svCommentTextContainer {
+    padding: 10px;
+    padding-top: 0;
+    width: 100%;
+}
+
+.svCommentTextArea {
+    height: 100%;
 }
 
 @media (max-width: 630px) {

@@ -10,6 +10,7 @@ const svSettings = {
     selectedDeal: 1,
     selectedPair: null
 };
+let editorStorage = {};
 let commentStorage = {};
 
 const trimLine = (trln) => {
@@ -419,6 +420,37 @@ export const setPair = (pairToSet) => {
     }, 1500); 
 };
 
+const addBidView = () => {
+    let bv = '';
+    const dirs = ['W', 'N', 'E', 'S'];
+    const vuls = [
+        ['Kaikki', 'E-W', 'All', 'I-L'],
+        ['Kaikki', 'N-S', 'All', 'P-E'],
+        ['Kaikki', 'E-W', 'All', 'I-L'],
+        ['Kaikki', 'N-S', 'All', 'P-E']
+    ];
+    const vul = svData.deals[svSettings.selectedDeal].vul;
+    const dealer = svData.deals[svSettings.selectedDeal].dealer;
+    let omits = 0;
+    if (['Pohjoinen', 'North'].includes(dealer)) omits = 1;
+    if (['Itä', 'East'].includes(dealer)) omits = 2;
+    if (['Etelä', 'South'].includes(dealer)) omits = 3;
+    for (let i = 0; i < 4; i++) {
+        bv += `
+            <div class="svBidBlock svBidBlockHeader ${vuls[i].includes(vul) ? 'svVul' : 'svNonVul'}" data-index="${i}">
+            ${dirs[i]}</div>
+        `;
+    }
+    for (let i = 0; i < omits; i++) {
+        bv += `<div class="svBidBlock svBidBlockBid"></div>`;
+    }
+    if (!editorStorage[svSettings.selectedDeal]) {
+        editorStorage[svSettings.selectedDeal] = {};
+        editorStorage[svSettings.selectedDeal].boxBoilerplate = bv;
+    }
+    return '<div class="svBidViewContainer"></div>';
+};
+
 const addBidBox = () => {
     let standardBids = '';
     let specialBids = '';
@@ -430,9 +462,10 @@ const addBidBox = () => {
                 data-level="${level}">${level} <span class="${cns[suit]}">${suits[suit]}</span></div>`;
         }
     }
-    specialBids += '<div class="svBidSlip svSpecSlip svPassSlip">Pass</div>';
-    specialBids += '<div class="svBidSlip svSpecSlip svDblSlip">X</div>';
-    specialBids += '<div class="svBidSlip svSpecSlip svRdblSlip">XX</div>';    
+    specialBids += '<div class="svBidSlip svSpecSlip svPassSlip" data-type="Pass">Pass</div>';
+    specialBids += '<div class="svBidSlip svSpecSlip svDblSlip" data-type="Dbl">X</div>';
+    specialBids += '<div class="svBidSlip svSpecSlip svRdblSlip" data-type="Rdbl">XX</div>';  
+    specialBids += '<div class="svBidSlip svSpecSlip svCancelSlip" data-type="Cancel">↩</div>';      
     const bidBox = `
         <div class="svBidBox">
             <div class="svStandardBids">
@@ -442,8 +475,59 @@ const addBidBox = () => {
                 ${specialBids}
             </div>
         </div>
+        ${addBidView()}
     `;
     return bidBox;
+};
+
+const updateBidView = () => {
+    let amountOfPasses = 4;
+    if (editorStorage[svSettings.selectedDeal]?.bids?.length) amountOfPasses = 3;
+    let bids = '';
+    if (editorStorage[svSettings.selectedDeal]?.bids?.length) {
+        for (let i = 0; i < editorStorage[svSettings.selectedDeal].bids.length; i++) {
+            const el = editorStorage[svSettings.selectedDeal].bids[i];
+            console.log('el: ', editorStorage[svSettings.selectedDeal].bids);
+            bids += `<div class="svBidBlock svBidBlockBid svBidType${el[0]}">${el[1]}</div>`;
+        }
+        for (let i = 0; i < amountOfPasses; i++) {
+            bids += '<div class="svBidBlock svBidBlockBid svBidTypePass">Pass</div>';
+        }
+    }
+    let box = document.querySelector(`.svCommentCard[data-index="${svSettings.selectedDeal}"] .svBidViewContainer`);
+    box.innerHTML = editorStorage[svSettings.selectedDeal].boxBoilerplate + bids;
+    box = document.querySelector(`.svCommentCard[data-index="${svSettings.selectedDeal}"] .svBidViewContainer`); 
+    const count = box.children.length;
+    const remainder = count % 4;
+    const missing = remainder === 0 ? 0 : 4 - remainder;
+    for (let i = 0; i < missing; i++) {
+        const newDiv = document.createElement('div');
+        newDiv.className = 'svBidBlock svBidBlockBid';
+        box.appendChild(newDiv);
+    }
+};
+
+const addBidSlipEventListeners = () => {
+    const slips = document.getElementsByClassName('svBidSlip');
+    console.log(slips);
+    for (let slip of slips) {
+        slip.addEventListener('click', () => {
+            console.log('click');
+            const deal = slip.closest('.svCommentCard').dataset.index;
+            if (!editorStorage[deal]) editorStorage[deal] = {};
+            if (!editorStorage[deal].bids) editorStorage[deal].bids = [];
+            console.log(editorStorage);
+            if (slip.classList.contains('svSpecSlip')) {
+                if (slip.classList.contains('svCancelSlip')) {
+                    editorStorage[deal].bids.pop();
+                }
+                else editorStorage[deal].bids.push([slip.dataset.type, slip.innerText]);
+            } else {
+                editorStorage[deal].bids.push(['bid', slip.innerHTML]);
+            }
+            updateBidView();
+        });
+    }
 };
 
 const initCommentTools = () => {
@@ -460,15 +544,23 @@ const initCommentTools = () => {
         commentOuter.innerHTML = toolCard;
         document.getElementById('addCommentButton').addEventListener('click', () => {
             const dc = document.querySelector(`.svDealCard[data-index="${svSettings.selectedDeal}"] .svGrid`);
-            const html = `<div class="svCommentCard" data-index="${svSettings.selectedDeal}">
-                ${addBidBox()}
+            const html = `<div class="svCommentCard flex-row" data-index="${svSettings.selectedDeal}">
+                <div class="svCommentEditor flex-row">
+                    ${addBidBox()}
+                </div>
+                <div class="svCommentTextContainer flex-col">
+                    <h3>Kommentit</h3>
+                    <textarea class="svCommentTextArea" rows="9" cols="40"></textarea>
+                </div>
             </div>`;
             const injection = document.createElement('div');
             injection.classList.add('svCommentField');
             injection.innerHTML = html;
             dc.after(injection);
+            addBidSlipEventListeners();
+            updateBidView();
         });
-    }, 1500);
+    }, 2000);
 };
 
 export const saveComments = async () => {
