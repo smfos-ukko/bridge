@@ -1,7 +1,7 @@
 import { loadSystems, unLoadSystems, systemSheet } from "./systemsheet/systemsheet.js";
 import { bidWriter } from "./bidwriter/bidwriter.js";
 import { movementEditor } from "./movementeditor/movementeditor.js";
-import { sheetViewer, setPair, loadComments } from "./sheetviewer/sheetviewer.js";
+import { sheetViewer, setPair, initViewer, viewerCheckLogin } from "./sheetviewer/sheetviewer.js";
 
 const mainPage = document.getElementById('mainpage');
 const loginPanel = document.getElementById('loginslide');
@@ -67,7 +67,10 @@ const loadPage = async (page) => {
     if (page == 'bidwriter') bidWriter();
     if (page == 'systemsheet') systemSheet();
     if (page == 'movementeditor') movementEditor();
-    if (page == 'sheetviewer') sheetViewer();
+    if (page == 'sheetviewer')  {
+        sheetViewer();
+        initViewer(); 
+    }
     loadedPages.push(page);
 }
 
@@ -119,6 +122,7 @@ async function logout() {
         welcomeText.innerText = '';
         authButton.innerText = 'Kirjaudu';
         unLoadSystems();
+        viewerCheckLogin();
     }
 }
 
@@ -151,7 +155,7 @@ async function login() {
             authButton.innerText = 'Kirjaudu ulos';
             document.getElementById('loginslide').classList.remove('open');
             loadSystems();
-            loadComments();
+            viewerCheckLogin();
             welcomeText.innerText = 'Hei ' + res.username + '!';
             authButton.innerText = 'Kirjaudu ulos';
         } else {

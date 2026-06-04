@@ -6,7 +6,15 @@
         <button id="svLoadPbnButton" class="mainbutton">Avaa PBN</button>
         <button id="svShareButton" class="mainbutton">Jaa linkki</button>
         <p class="svVisibleOnDesktop">Voit liikkua nuolinäppäimillä<br />jakojen välillä.</p>
-        <div id="commentOuter"></div>
+        <div id="commentOuter">
+            <div id="svToolCard" class="flex-col align-center">
+                <h3>Kommentit</h3>
+                <input type="text" id="svCreateCommentsInput" placeholder="Anna tapahtuman nimi">
+                <button id="svCreateCommentsButton">Kommentoi</button>
+                <div id="loadedCommentsContainer"></div>
+                <div id="commentToolsContainer"></div>
+            </div>
+        </div>
     </div>
     <div id="svMain"></div>
 </div>

@@ -48,6 +48,7 @@ $db->exec("
     CREATE TABLE IF NOT EXISTS comments (
         id INTEGER PRIMARY KEY,
         user_id INTEGER,
+        type TEXT,
         name TEXT,
         data TEXT,
         created_at TEXT,
@@ -240,7 +241,7 @@ switch ($action) {
 
         break;
 
-    case 'saveComments':
+    case 'createComments':
         $input = json_decode(file_get_contents('php://input'), true);
 
         checkAuth($input);
@@ -250,24 +251,11 @@ switch ($action) {
         $comment = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($comment) {
-            $stmt = $db->prepare("
-                UPDATE comments 
-                SET 
-                    data = ?,
-                    updated_at = datetime('now')
-                WHERE user_id = ? AND name = ?
-            ");
-            $stmt->execute([
-                json_encode($input['data']),
-                $_SESSION['user_id'],
-                $input['name']
-            ]);
-
-            jsonResponse(['status' => 'updated']);
+            jsonResponse(['status' => 'exists']);
         } else {
             $stmt = $db->prepare("
-                INSERT INTO comments (user_id, name, data, created_at, updated_at)
-                VALUES (?, ?, ?, datetime('now'), datetime('now'))
+                INSERT INTO comments (user_id, type, name, data, created_at, updated_at)
+                VALUES (?, 'event', ?, ?, datetime('now'), datetime('now'))
             ");
             $stmt->execute([
                 $_SESSION['user_id'],
@@ -284,7 +272,7 @@ switch ($action) {
         checkAuth($input);
 
         $stmt = $db->prepare("
-            SELECT id, name, data, updated_at
+            SELECT id, type, name, data, updated_at
             FROM comments
             WHERE user_id = ?
             ORDER BY updated_at DESC

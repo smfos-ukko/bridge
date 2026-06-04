@@ -11,7 +11,8 @@ const svSettings = {
     selectedPair: null
 };
 let editorStorage = {};
-let commentStorage = {};
+let eventStorage = [];
+let eventLoaded = false;
 
 const trimLine = (trln) => {
     if (!trln) return null;
@@ -276,6 +277,7 @@ const svReset = () => {
     };
     svSettings.selectedDeal = 1;
     svSettings.selectedPair = null;
+    eventLoaded = false;
 }
 
 export async function sheetViewer() {
@@ -401,14 +403,21 @@ export async function sheetViewer() {
         } catch (err) {
             showMessage('Virhe! ' + err, 'red');
         }
+        svReset();
         renderBoards();
+        eventLoaded = true;
     });
 
     document.getElementById('svLoadPbnButton').addEventListener('click', () => {
         pbnReader().then(data => {
-            svReset();
-            svData = data;
-            renderBoards();
+            if (data) {
+                svReset();
+                svData = data;
+                renderBoards();
+                eventLoaded = true;
+            } else {
+                showMessage('Virhe!', 'red');
+            }
         });
     });
 }
@@ -530,56 +539,92 @@ const addBidSlipEventListeners = () => {
     }
 };
 
+const addComment = () => {
+    if (!eventLoaded) {
+        showMessage('Turnausta ei ole ladattu.');
+        return;
+    }
+    const sd = svSettings.selectedDeal;
+    const dc = document.querySelector(`.svDealCard[data-index="${sd}"] .svGrid`);
+    if (dc.parentElement.querySelector('.svCommentCard')) return;
+    const html = `<div class="svCommentCard flex-row" data-index="${sd}">
+        <div class="svCommentEditor flex-row">
+            ${addBidBox()}
+        </div>
+        <div class="svCommentTextContainer flex-col">
+            <h3>Kommentit</h3>
+            <textarea class="svCommentTextArea" rows="9" cols="40"></textarea>
+        </div>
+        <button class="svCloseButton" data-index="${sd}">X</button>
+    </div>`;
+    const injection = document.createElement('div');
+    injection.classList.add('svCommentField');
+    injection.dataset.index = sd;
+    injection.innerHTML = html;
+    dc.after(injection);
+    dc.parentElement.querySelector('.svCloseButton').addEventListener('click', () => {
+        dc.parentElement.querySelector(`.svCommentField[data-index="${sd}"]`).remove();
+    });
+    addBidSlipEventListeners();
+    updateBidView();
+};
+/*
 const initCommentTools = () => {
     setTimeout(() => {
         const commentOuter = document.getElementById('commentOuter');
         const toolCard = `
             <div id="svToolCard" class="flex-col align-center">
                 <h3>Kommentit</h3>
+                <input type="text" id="svCreateCommentsInput" placeholder="Anna tapahtuman nimi">
+                <button id="svCreateCommentsButton">Kommentoi</button>
                 <div id="loadedCommentsContainer"></div>
-                <button id="addCommentButton">Lisää kommentti</button>
                 <div id="commentToolsContainer"></div>
             </div>
         `;
         commentOuter.innerHTML = toolCard;
+        
+
+        //TODO siirrä
+                        //<button id="addCommentButton">Lisää kommentti</button>
+
         document.getElementById('addCommentButton').addEventListener('click', () => {
-            const dc = document.querySelector(`.svDealCard[data-index="${svSettings.selectedDeal}"] .svGrid`);
-            const html = `<div class="svCommentCard flex-row" data-index="${svSettings.selectedDeal}">
-                <div class="svCommentEditor flex-row">
-                    ${addBidBox()}
-                </div>
-                <div class="svCommentTextContainer flex-col">
-                    <h3>Kommentit</h3>
-                    <textarea class="svCommentTextArea" rows="9" cols="40"></textarea>
-                </div>
-            </div>`;
-            const injection = document.createElement('div');
-            injection.classList.add('svCommentField');
-            injection.innerHTML = html;
-            dc.after(injection);
-            addBidSlipEventListeners();
-            updateBidView();
+            addComment();
         });
     }, 2000);
-};
+};*/
 
-export const saveComments = async () => {
+export const createComments = async () => {
+    if (!eventLoaded) {
+        showMessage('Turnausta ei ole ladattu.');
+        return;
+    }
+    const name = document.getElementById('svCreateCommentsInput').value;
+    if(!name) {
+        showMessage('Anna tapahtumalle nimi.');
+        return;
+    }
     if (!sessionStorage.getItem('user') || !sessionStorage.getItem('token')) {
         showMessage('Kirjaudu sisään tallentaaksesi kommentteja.');
         return;
     }
     const token = sessionStorage.getItem('token');
     if (!token) {
-        showMessage('Token not set.');
+        showMessage('Kirjaudu sisään kommentoidaksesi.');
         return;
     }
-    const res = await api('saveComments', { token, name: 'TODO name', data: commentStorage });
-    console.log('saveComments', res.status);
-    if (res.status == 'saved' || res.status == 'updated') showMessage('Tallennettu.');
+    if (!svData.comments) svData.comments = {};
+    else console.error('Comments already exist...');
+    const res = await api('createComments', { token, name, data: svData });
+    console.log('createComments', res.status);
+    if (res.status == 'saved') {
+        showMessage('Tallennettu.');
+        loadComments();
+    }
+    else if (res.status == 'exists') showMessage('Jako on jo olemassa.');
     else showMessage('Virhe!', 'red');
 };
 
-export const loadComments = async () => {
+const loadComments = async () => {
     if (!sessionStorage.getItem('user') || !sessionStorage.getItem('token')) return;
     const token = sessionStorage.getItem('token');
     if (!token) {
@@ -587,9 +632,32 @@ export const loadComments = async () => {
         return;
     }
     const res = await api('loadComments', { token });
-    console.log('loadcomments ', res);
-    if (renderDeal.data) commentStorage = JSON.parse(res.data);
-    initCommentTools();
+    if (!res) return; 
+    emptyEvents();
+    for (let i = 0; i < res.length; i++) {
+        eventStorage.push(res[i]);
+    }
+    console.log(eventStorage);
+    const lcc = document.getElementById('loadedCommentsContainer');
+    for (let i = 0; i < eventStorage.length; i++) {
+        const lcb = document.createElement('button');
+        lcb.dataset.index = i;
+        lcb.innerText = eventStorage[i].name;
+        lcb.addEventListener('click', () => {
+            svReset();
+            svData = eventStorage[Number(lcb.dataset.index)].data;
+            renderBoards();
+            eventLoaded = true;
+        });
+        lcc.appendChild(lcb);
+    }
+    const acb = document.createElement('button');
+    acb.id = 'svCommentDealButton';
+    acb.innerText = 'Kommentoi jakoa';
+    acb.addEventListener('click', () => {
+        addComment();
+    });
+    lcc.appendChild(acb);
 };
 
 document.addEventListener('keydown', (e) => {
@@ -597,6 +665,26 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowLeft') switchDeal('prev');
 });
 
-if (sessionStorage.getItem('user') && Object.keys(commentStorage).length == 0) {
-    loadComments();
-}
+const emptyEvents = () => {
+    eventStorage = [];
+    document.getElementById('loadedCommentsContainer').innerHTML = '';
+};
+
+export const viewerCheckLogin = () => {
+    if (!sessionStorage.getItem('user')) {
+        emptyEvents();
+        return;
+    }
+    if (document.getElementById('commentOuter')) {
+        loadComments();
+    }
+};
+
+export const initViewer = () => {
+    document.getElementById('svCreateCommentsButton').addEventListener('click', () => {
+        createComments();
+    });
+    if (sessionStorage.getItem('user') && Object.keys(eventStorage).length == 0) {
+        loadComments();
+    }
+};

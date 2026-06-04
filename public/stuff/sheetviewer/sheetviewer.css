@@ -166,6 +166,11 @@
     padding: 2px;
     text-align: center;
     border-radius: 3px;
+    cursor: default;
+}
+
+.svBidSlip:hover {
+    background-color: #d7d7d7;
 }
 
 .svSpecSlip {
@@ -242,6 +247,13 @@
     height: 100%;
 }
 
+.svCloseButton {
+    background-color: red;
+    color: white;
+    font-size: x-large;
+    height: 50px;
+}
+
 @media (max-width: 630px) {
     #svMain {
         margin-top: 15px;
@@ -267,11 +279,7 @@
 
 @media (min-width: 631px) {
     #sheetviewer {
-        min-height: 37vh;
-    }
-
-    #svDealView {
-        margin-top: 120px;
+        min-height: 100vh;
     }
 
     .svDealResultsBoard {
@@ -290,7 +298,6 @@
 
     #svDealsMenu {
         max-width: 65%;
-        min-height: 165px;
     }
 
     .svDealCard {
