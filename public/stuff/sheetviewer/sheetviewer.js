@@ -16,7 +16,7 @@ let eventLoaded = false;
 
 const trimLine = (trln) => {
     if (!trln) return null;
-    return trln.split(' ').filter(Boolean);
+    return trln.split(' ').filter(Boolean).slice(0, 9);
 };
 
 const switchDeal = (ind = svSettings.selectedDeal) => {
@@ -265,7 +265,6 @@ const renderBoards = () => {
             console.log(ex);
         }
     });
-    console.log(svData);
     switchDeal();
 };
 
@@ -309,10 +308,29 @@ export async function sheetViewer() {
                     continue;
                 }
                 if (playersHasBegun) {
-                    const ln = line.split(' ').filter(Boolean).filter(item => item !== '*');
-                    svData.pairs[ln[1]] = ln[5] + ' / ' + ln[8];
+                    if (!line.trim()) continue;
+                    const pairNumber = line.match(/^\s*\d+\s+([A-Z]?\d+)\b/)?.[1];
+                    if (!pairNumber) {
+                        console.log('Line omitted! (match) ', line);
+                        continue;
+                    }
+                    const dashPos = line.indexOf(' - ');
+                    if (dashPos === -1) {
+                        console.log('Line omitted! (dashPos) ', line);
+                        continue;
+                    }
+                    const leftPart = line.slice(0, dashPos);
+                    const start = leftPart.lastIndexOf('  ');
+                    if (start === -1) {
+                        console.log('Line omitted! (start) ', line);
+                        continue;
+                    }
+                    const rightPart = line.slice(start).trim();
+                    const playerNames = rightPart.split(/\s{2,}/)[0].trim();
+                    svData.pairs[pairNumber] = playerNames;
                 }
             }
+            console.log(svData);
 
             //Jaot
             const dtxt = dealsText.split('\n');
@@ -376,7 +394,8 @@ export async function sheetViewer() {
                         },
                         optimum: ch[13].trim(),
                         tricks: [],
-                        results: []
+                        results: [],
+                        comments: []
                     };
                 }
 
@@ -403,7 +422,6 @@ export async function sheetViewer() {
         } catch (err) {
             showMessage('Virhe! ' + err, 'red');
         }
-        svReset();
         renderBoards();
         eventLoaded = true;
     });
@@ -518,10 +536,8 @@ const updateBidView = () => {
 
 const addBidSlipEventListeners = () => {
     const slips = document.getElementsByClassName('svBidSlip');
-    console.log(slips);
     for (let slip of slips) {
         slip.addEventListener('click', () => {
-            console.log('click');
             const deal = slip.closest('.svCommentCard').dataset.index;
             if (!editorStorage[deal]) editorStorage[deal] = {};
             if (!editorStorage[deal].bids) editorStorage[deal].bids = [];
@@ -555,8 +571,11 @@ const addComment = () => {
             <h3>Kommentit</h3>
             <textarea class="svCommentTextArea" rows="9" cols="40"></textarea>
         </div>
-        <button class="svCloseButton" data-index="${sd}">X</button>
-    </div>`;
+        <div class="flex-col">
+            <button class="svCloseButton" data-index="${sd}">X</button>
+            <button class="svInjectCommentButton">Lisää</button>
+        </div>
+        </div>`;
     const injection = document.createElement('div');
     injection.classList.add('svCommentField');
     injection.dataset.index = sd;
@@ -565,33 +584,23 @@ const addComment = () => {
     dc.parentElement.querySelector('.svCloseButton').addEventListener('click', () => {
         dc.parentElement.querySelector(`.svCommentField[data-index="${sd}"]`).remove();
     });
+    dc.parentElement.querySelector('.svInjectCommentButton').addEventListener('click', () => {
+        if (!sessionStorage.getItem('user')) {
+            showMessage('Kirjaudu sisään kommentoidaksesi.');
+            return;
+        }
+        const cma = {
+            creator: sessionStorage.getItem('user'),
+            bids: dc.parentElement.querySelector('.svBidViewContainer').outerHTML,
+            text: dc.parentElement.querySelector('.svCommentTextArea').value
+        };
+        console.log(cma);
+        sendComment(cma);
+        svData.deals[sd].comments.push(cma);
+    });
     addBidSlipEventListeners();
     updateBidView();
 };
-/*
-const initCommentTools = () => {
-    setTimeout(() => {
-        const commentOuter = document.getElementById('commentOuter');
-        const toolCard = `
-            <div id="svToolCard" class="flex-col align-center">
-                <h3>Kommentit</h3>
-                <input type="text" id="svCreateCommentsInput" placeholder="Anna tapahtuman nimi">
-                <button id="svCreateCommentsButton">Kommentoi</button>
-                <div id="loadedCommentsContainer"></div>
-                <div id="commentToolsContainer"></div>
-            </div>
-        `;
-        commentOuter.innerHTML = toolCard;
-        
-
-        //TODO siirrä
-                        //<button id="addCommentButton">Lisää kommentti</button>
-
-        document.getElementById('addCommentButton').addEventListener('click', () => {
-            addComment();
-        });
-    }, 2000);
-};*/
 
 export const createComments = async () => {
     if (!eventLoaded) {
@@ -612,8 +621,6 @@ export const createComments = async () => {
         showMessage('Kirjaudu sisään kommentoidaksesi.');
         return;
     }
-    if (!svData.comments) svData.comments = {};
-    else console.error('Comments already exist...');
     const res = await api('createComments', { token, name, data: svData });
     console.log('createComments', res.status);
     if (res.status == 'saved') {
@@ -626,17 +633,21 @@ export const createComments = async () => {
 
 const loadComments = async () => {
     if (!sessionStorage.getItem('user') || !sessionStorage.getItem('token')) return;
+
     const token = sessionStorage.getItem('token');
+
     if (!token) {
         showMessage('Token not set.');
         return;
     }
+
     const res = await api('loadComments', { token });
     if (!res) return; 
     emptyEvents();
     for (let i = 0; i < res.length; i++) {
         eventStorage.push(res[i]);
     }
+    
     console.log(eventStorage);
     const lcc = document.getElementById('loadedCommentsContainer');
     for (let i = 0; i < eventStorage.length; i++) {
@@ -658,6 +669,19 @@ const loadComments = async () => {
         addComment();
     });
     lcc.appendChild(acb);
+};
+
+const sendComment = async (commentArray) => {
+    if (!sessionStorage.getItem('user') || !sessionStorage.getItem('token')) return;
+
+    const token = sessionStorage.getItem('token');
+
+    if (!token) {
+        showMessage('Token not set.');
+        return;
+    }
+
+    const res = await api('sendComment', { token, comment: JSON.stringify(commentArray) });
 };
 
 document.addEventListener('keydown', (e) => {

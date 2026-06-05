@@ -308,6 +308,15 @@ switch ($action) {
         }
 
         break;
+    
+    case 'sendComment':
+        $input = json_decode(file_get_contents('php://input'), true);
+
+        checkAuth($input);
+
+        //tästä
+        
+        break;
 
     case 'deleteComment':
 
