@@ -58,6 +58,7 @@ const handleBuffer = (dl, bf) => {
             };
             pbnData.deals[dl].results = [];
             pbnData.deals[dl].comments = [];
+            pbnData.saved = false;
             for (let r = 0; r < dat.length; r++) {
                 const row = dat[r];
                 const scoreNS = getValue(row, 'Score_NS', '-');

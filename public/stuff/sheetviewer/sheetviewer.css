@@ -254,6 +254,10 @@
     height: 50px;
 }
 
+#svDate {
+    margin-left: 20px;
+}
+
 @media (max-width: 630px) {
     #svMain {
         margin-top: 15px;

@@ -181,8 +181,20 @@ const renderResults = (dealIn) => {
     `;
 };
 
-const renderBoards = () => {
+const renderFeedback = (dealIn, comments) => {
+    if (!comments) return '';
+    for (let i = 0; i < comments.length; i++) {
+        if (comments[i].data.deal != dealIn) return '';
+        return `
+                <p>${comments[i].data.text}</p>
+                <p class="svEditorInfo">${comments[i].updated_at}</p>
+            `;
+    }
+};
+
+const renderBoards = (comments = null) => {
     const svMain = document.getElementById('svMain');
+    console.log('RES', comments);
 
     //menyy
     let buttonsHtml = '';
@@ -211,6 +223,7 @@ const renderBoards = () => {
                     <div class="svDealHand">${renderDeal(svData.deals[i].hands.s)}</div>
                     <div class="svDealTricks">${renderTricks(i)}</div>
                 </div>
+                <div class="svFeedbackContainer flex-row">${renderFeedback(i, comments)}</div>
                 <div class="svDealResultsContainer">${renderResults(i)}</div>
             </div>
         `;
@@ -218,6 +231,10 @@ const renderBoards = () => {
 
     //final
     let html = `
+        <div class="flex-row">
+            <div id="svEvent"><h2>${svData.event ? svData.event : ''}</h2></div>
+            <div id="svDate"><h2>${svData.date ? svData.date : ''}</h2></div>
+        </div>
         <div id="svDealsMenu">
             ${buttonsHtml}
         </div>
@@ -266,6 +283,9 @@ const renderBoards = () => {
         }
     });
     switchDeal();
+    const cdb = document.getElementById('svCommentDealButton');
+    if (!cdb) return;
+    cdb.style.display = 'inline-block';
 };
 
 const svReset = () => {
@@ -277,6 +297,9 @@ const svReset = () => {
     svSettings.selectedDeal = 1;
     svSettings.selectedPair = null;
     eventLoaded = false;
+    const cdb = document.getElementById('svCommentDealButton');
+    if (!cdb) return;
+    cdb.style.display = 'none';
 }
 
 export async function sheetViewer() {
@@ -297,6 +320,12 @@ export async function sheetViewer() {
                 showMessage('Sivua ei voitu ladata.');
                 return;
             }
+
+            const title = doc.querySelector('b').innerText;
+            const sp = title.match(/^(\S+)\s+(.*)$/);
+            console.log(sp);
+            svData.event = sp[2];
+            svData.date = sp[1];
 
             //pelaajat
             let playersHasBegun = false;
@@ -422,6 +451,8 @@ export async function sheetViewer() {
         } catch (err) {
             showMessage('Virhe! ' + err, 'red');
         }
+        svData.saved = false;
+        addBoilerPlates();
         renderBoards();
         eventLoaded = true;
     });
@@ -431,6 +462,7 @@ export async function sheetViewer() {
             if (data) {
                 svReset();
                 svData = data;
+                addBoilerPlates();
                 renderBoards();
                 eventLoaded = true;
             } else {
@@ -447,35 +479,33 @@ export const setPair = (pairToSet) => {
     }, 1500); 
 };
 
-const addBidView = () => {
-    let bv = '';
-    const dirs = ['W', 'N', 'E', 'S'];
-    const vuls = [
-        ['Kaikki', 'E-W', 'All', 'I-L'],
-        ['Kaikki', 'N-S', 'All', 'P-E'],
-        ['Kaikki', 'E-W', 'All', 'I-L'],
-        ['Kaikki', 'N-S', 'All', 'P-E']
-    ];
-    const vul = svData.deals[svSettings.selectedDeal].vul;
-    const dealer = svData.deals[svSettings.selectedDeal].dealer;
-    let omits = 0;
-    if (['Pohjoinen', 'North'].includes(dealer)) omits = 1;
-    if (['Itä', 'East'].includes(dealer)) omits = 2;
-    if (['Etelä', 'South'].includes(dealer)) omits = 3;
-    for (let i = 0; i < 4; i++) {
-        bv += `
-            <div class="svBidBlock svBidBlockHeader ${vuls[i].includes(vul) ? 'svVul' : 'svNonVul'}" data-index="${i}">
-            ${dirs[i]}</div>
-        `;
-    }
-    for (let i = 0; i < omits; i++) {
-        bv += `<div class="svBidBlock svBidBlockBid"></div>`;
-    }
-    if (!editorStorage[svSettings.selectedDeal]) {
-        editorStorage[svSettings.selectedDeal] = {};
-        editorStorage[svSettings.selectedDeal].boxBoilerplate = bv;
-    }
-    return '<div class="svBidViewContainer"></div>';
+const addBoilerPlates = () => {
+    Object.values(svData.deals).forEach((deal) => {
+        let bv = '';
+        const dirs = ['W', 'N', 'E', 'S'];
+        const vuls = [
+            ['Kaikki', 'E-W', 'All', 'I-L'],
+            ['Kaikki', 'N-S', 'All', 'P-E'],
+            ['Kaikki', 'E-W', 'All', 'I-L'],
+            ['Kaikki', 'N-S', 'All', 'P-E']
+        ];
+        const vul = deal.vul;
+        const dealer = deal.dealer;
+        let omits = 0;
+        if (['Pohjoinen', 'North'].includes(dealer)) omits = 1;
+        if (['Itä', 'East'].includes(dealer)) omits = 2;
+        if (['Etelä', 'South'].includes(dealer)) omits = 3;
+        for (let i = 0; i < 4; i++) {
+            bv += `
+                <div class="svBidBlock svBidBlockHeader ${vuls[i].includes(vul) ? 'svVul' : 'svNonVul'}" data-index="${i}">
+                ${dirs[i]}</div>
+            `;
+        }
+        for (let i = 0; i < omits; i++) {
+            bv += `<div class="svBidBlock svBidBlockBid"></div>`;
+        }
+        deal.boxBoilerplate = bv;
+    });
 };
 
 const addBidBox = () => {
@@ -502,7 +532,7 @@ const addBidBox = () => {
                 ${specialBids}
             </div>
         </div>
-        ${addBidView()}
+        <div class="svBidViewContainer"></div>
     `;
     return bidBox;
 };
@@ -522,7 +552,7 @@ const updateBidView = () => {
         }
     }
     let box = document.querySelector(`.svCommentCard[data-index="${svSettings.selectedDeal}"] .svBidViewContainer`);
-    box.innerHTML = editorStorage[svSettings.selectedDeal].boxBoilerplate + bids;
+    box.innerHTML = svData.deals[svSettings.selectedDeal].boxBoilerplate + bids;
     box = document.querySelector(`.svCommentCard[data-index="${svSettings.selectedDeal}"] .svBidViewContainer`); 
     const count = box.children.length;
     const remainder = count % 4;
@@ -555,7 +585,7 @@ const addBidSlipEventListeners = () => {
     }
 };
 
-const addComment = () => {
+const addComment = (id = 0) => {
     if (!eventLoaded) {
         showMessage('Turnausta ei ole ladattu.');
         return;
@@ -563,7 +593,7 @@ const addComment = () => {
     const sd = svSettings.selectedDeal;
     const dc = document.querySelector(`.svDealCard[data-index="${sd}"] .svGrid`);
     if (dc.parentElement.querySelector('.svCommentCard')) return;
-    const html = `<div class="svCommentCard flex-row" data-index="${sd}">
+    const html = `<div class="svCommentCard flex-row" data-index="${sd}" data-id="${id}">
         <div class="svCommentEditor flex-row">
             ${addBidBox()}
         </div>
@@ -591,23 +621,23 @@ const addComment = () => {
         }
         const cma = {
             creator: sessionStorage.getItem('user'),
+            deal: sd,
             bids: dc.parentElement.querySelector('.svBidViewContainer').outerHTML,
             text: dc.parentElement.querySelector('.svCommentTextArea').value
         };
         console.log(cma);
-        sendComment(cma);
-        svData.deals[sd].comments.push(cma);
+        sendComment(cma, id);
     });
     addBidSlipEventListeners();
     updateBidView();
 };
 
-export const createComments = async () => {
+export const saveEvent = async () => {
     if (!eventLoaded) {
         showMessage('Turnausta ei ole ladattu.');
         return;
     }
-    const name = document.getElementById('svCreateCommentsInput').value;
+    const name = document.getElementById('svSaveEventInput').value;
     if(!name) {
         showMessage('Anna tapahtumalle nimi.');
         return;
@@ -616,22 +646,24 @@ export const createComments = async () => {
         showMessage('Kirjaudu sisään tallentaaksesi kommentteja.');
         return;
     }
+    const username = sessionStorage.getItem('user');
     const token = sessionStorage.getItem('token');
     if (!token) {
         showMessage('Kirjaudu sisään kommentoidaksesi.');
         return;
     }
-    const res = await api('createComments', { token, name, data: svData });
+    svData.saved = true;
+    const res = await api('saveevent', { username: username, token, name, data: svData });
     console.log('createComments', res.status);
     if (res.status == 'saved') {
         showMessage('Tallennettu.');
-        loadComments();
+        loadEvents();
     }
     else if (res.status == 'exists') showMessage('Jako on jo olemassa.');
     else showMessage('Virhe!', 'red');
 };
 
-const loadComments = async () => {
+const loadEvents = async () => {
     if (!sessionStorage.getItem('user') || !sessionStorage.getItem('token')) return;
 
     const token = sessionStorage.getItem('token');
@@ -641,7 +673,7 @@ const loadComments = async () => {
         return;
     }
 
-    const res = await api('loadComments', { token });
+    const res = await api('loadevents', { token });
     if (!res) return; 
     emptyEvents();
     for (let i = 0; i < res.length; i++) {
@@ -649,14 +681,16 @@ const loadComments = async () => {
     }
     
     console.log(eventStorage);
-    const lcc = document.getElementById('loadedCommentsContainer');
+    const lcc = document.getElementById('loadedEventsContainer');
     for (let i = 0; i < eventStorage.length; i++) {
         const lcb = document.createElement('button');
         lcb.dataset.index = i;
+        lcb.dataset.event = eventStorage[i].id;
         lcb.innerText = eventStorage[i].name;
-        lcb.addEventListener('click', () => {
+        lcb.addEventListener('click', (e) => {
             svReset();
             svData = eventStorage[Number(lcb.dataset.index)].data;
+            svData.eventId = e.target.dataset.event;
             renderBoards();
             eventLoaded = true;
         });
@@ -665,23 +699,34 @@ const loadComments = async () => {
     const acb = document.createElement('button');
     acb.id = 'svCommentDealButton';
     acb.innerText = 'Kommentoi jakoa';
+    acb.style.display = 'none';
     acb.addEventListener('click', () => {
         addComment();
     });
     lcc.appendChild(acb);
 };
 
-const sendComment = async (commentArray) => {
+const sendComment = async (commentArray, id) => {
     if (!sessionStorage.getItem('user') || !sessionStorage.getItem('token')) return;
 
+    const username = sessionStorage.getItem('user');
     const token = sessionStorage.getItem('token');
 
-    if (!token) {
-        showMessage('Token not set.');
-        return;
-    }
+    const res = await api('sendcomment', { username, token, event: svData.eventId, id, data: commentArray });
+    console.log(res);
+    if (res) loadComments();
+};
 
-    const res = await api('sendComment', { token, comment: JSON.stringify(commentArray) });
+const loadComments = async () => {
+    if (!sessionStorage.getItem('user') || !sessionStorage.getItem('token')) return;
+
+    const username = sessionStorage.getItem('user');
+    const token = sessionStorage.getItem('token');
+
+    const res = await api('loadcomments', { username, token, event: svData.eventId });
+    console.log(res);
+    if (!res) return;
+    renderBoards(res);
 };
 
 document.addEventListener('keydown', (e) => {
@@ -691,7 +736,7 @@ document.addEventListener('keydown', (e) => {
 
 const emptyEvents = () => {
     eventStorage = [];
-    document.getElementById('loadedCommentsContainer').innerHTML = '';
+    document.getElementById('loadedEventsContainer').innerHTML = '';
 };
 
 export const viewerCheckLogin = () => {
@@ -700,15 +745,15 @@ export const viewerCheckLogin = () => {
         return;
     }
     if (document.getElementById('commentOuter')) {
-        loadComments();
+        loadEvents();
     }
 };
 
 export const initViewer = () => {
-    document.getElementById('svCreateCommentsButton').addEventListener('click', () => {
-        createComments();
+    document.getElementById('svSaveEventButton').addEventListener('click', () => {
+        saveEvent();
     });
     if (sessionStorage.getItem('user') && Object.keys(eventStorage).length == 0) {
-        loadComments();
+        loadEvents();
     }
 };

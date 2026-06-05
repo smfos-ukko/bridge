@@ -45,11 +45,19 @@ $db->exec("
         updated_at TEXT
     );
 
+    CREATE TABLE IF NOT EXISTS events (
+        id INTEGER PRIMARY KEY,
+        user_id INTEGER,
+        name TEXT,
+        data TEXT,
+        created_at TEXT,
+        updated_at TEXT
+    );
+
     CREATE TABLE IF NOT EXISTS comments (
         id INTEGER PRIMARY KEY,
         user_id INTEGER,
-        type TEXT,
-        name TEXT,
+        event_id INTEGER,
         data TEXT,
         created_at TEXT,
         updated_at TEXT
@@ -77,6 +85,14 @@ function checkAuth($input) {
             jsonResponse(['error' => 'unauthorized'], 401);
         }
     }
+}
+
+function getUserFromId($uid) {
+    global $db;
+    $stmt = $db->prepare("SELECT username FROM users WHERE id = ?");
+    $stmt->execute([$uid]);
+    $username = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $username['username'];
 }
 
 $action = $_GET['action'] ?? '';
@@ -241,21 +257,21 @@ switch ($action) {
 
         break;
 
-    case 'createComments':
+    case 'saveevent':
         $input = json_decode(file_get_contents('php://input'), true);
 
         checkAuth($input);
 
-        $stmt = $db->prepare("SELECT * FROM comments WHERE user_id = ? AND name = ?");
+        $stmt = $db->prepare("SELECT * FROM events WHERE user_id = ? AND name = ?");
         $stmt->execute([$_SESSION['user_id'], $input['name']]);
-        $comment = $stmt->fetch(PDO::FETCH_ASSOC);
+        $event = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($comment) {
+        if ($event) {
             jsonResponse(['status' => 'exists']);
         } else {
             $stmt = $db->prepare("
-                INSERT INTO comments (user_id, type, name, data, created_at, updated_at)
-                VALUES (?, 'event', ?, ?, datetime('now'), datetime('now'))
+                INSERT INTO events (user_id, name, data, created_at, updated_at)
+                VALUES (?, ?, ?, datetime('now'), datetime('now'))
             ");
             $stmt->execute([
                 $_SESSION['user_id'],
@@ -266,14 +282,14 @@ switch ($action) {
         }
         break;
 
-    case 'loadComments':
+    case 'loadevents':
         $input = json_decode(file_get_contents('php://input'), true);
 
         checkAuth($input);
 
         $stmt = $db->prepare("
-            SELECT id, type, name, data, updated_at
-            FROM comments
+            SELECT id, name, data, updated_at
+            FROM events
             WHERE user_id = ?
             ORDER BY updated_at DESC
         ");
@@ -288,33 +304,85 @@ switch ($action) {
         jsonResponse($rows);
         break;
 
-    case 'loadComment':
+    case 'loadcomments':
         $input = json_decode(file_get_contents('php://input'), true);
 
         $stmt = $db->prepare("
-            SELECT id, name, data, updated_at
+            SELECT *
             FROM comments
-            WHERE id = ?
+            WHERE event_id = ?
             ORDER BY updated_at DESC
         ");
 
-        $stmt->execute([$input['id']]);
-        $comment = $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt->execute([$input['event']]);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        if ($comment) {
-            jsonResponse(json_decode($comment, true));
+        if ($rows) {
+            foreach ($rows as &$row) {
+                $row['data'] = json_decode($row['data'], true);
+                $row['username'] = getUserFromId($row['user_id']);
+            }
+            jsonResponse($rows);
         } else {
             jsonResponse(['error' => 'not found'], 400);
         }
 
         break;
     
-    case 'sendComment':
+    case 'sendcomment':
         $input = json_decode(file_get_contents('php://input'), true);
 
         checkAuth($input);
 
-        //tästä
+        if ($input['id'] != 0) {
+            $stmt = $db->prepare("SELECT * FROM comments WHERE id = ?");
+            $stmt->execute([$input['id']]);
+            $comment = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$comment) {
+                jsonResponse(['error' => 'not found'], 400);
+            } else {
+                $stmt = $db->prepare("
+                    UPDATE comments 
+                    SET 
+                        data = ?,
+                        updated_at = datetime('now')
+                    WHERE id = ?
+                ");
+                $stmt->execute([
+                    json_encode($input['data']),
+                    $input['id']
+                ]);
+                jsonResponse(['updated']);
+            }
+        } else {
+            $stmt = $db->prepare("
+                INSERT INTO comments (user_id, event_id, data, created_at, updated_at)
+                VALUES (?, ?, ?, datetime('now'), datetime('now'))
+            ");
+            $stmt->execute([
+                $_SESSION['user_id'],
+                $input['event'],
+                json_encode($input['data'])
+            ]);
+            jsonResponse(['status' => 'saved']);
+        }
+
+        
+
+        if ($comment) {
+            jsonResponse(['status' => 'exists']);
+        } else {
+            $stmt = $db->prepare("
+                INSERT INTO comments (user_id, type, name, data, created_at, updated_at)
+                VALUES (?, 'comment', ?, ?, datetime('now'), datetime('now'))
+            ");
+            $stmt->execute([
+                $_SESSION['user_id'],
+                $input['name'],
+                json_encode($input['data'])
+            ]);
+            jsonResponse(['status' => 'saved']);
+        }
         
         break;
 
