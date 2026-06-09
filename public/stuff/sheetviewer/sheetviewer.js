@@ -12,6 +12,7 @@ const svSettings = {
 };
 let editorStorage = {};
 let eventStorage = [];
+let commentData = null;
 let eventLoaded = false;
 
 const trimLine = (trln) => {
@@ -182,12 +183,12 @@ const renderResults = (dealIn) => {
 };
 
 const renderFeedback = (dealIn, comments) => {
-    console.log(dealIn, comments);
     if (!comments) return '';
     const injectBids = (bax) => {
         if (!bax.data.bids) return '';
         try {
             const ba = bax.data.bids;
+            console.log('onkoniita', ba);
             let amountOfPasses = 3;
             let bids = '';
             if (ba.length) {
@@ -233,7 +234,7 @@ const renderFeedback = (dealIn, comments) => {
         if (comments[i].data.deal != dealIn) continue;
         comms += `
                 <div class="svFeedbackCard flex-row" data-index="${comments[i].id}">
-                    <div class="svBidViewContainer">
+                    <div class="svBidViewContainer ${comments[i].data?.bids?.length ? '' : 'invisible'}">
                         ${injectBids(comments[i])}
                     </div>
                     <div class="flex-col justify-sb w-100">
@@ -322,6 +323,10 @@ const renderBoards = (comments = null) => {
 
     for (let btn of svMain.querySelectorAll('.svDeleteCommentButton')) {
         btn.addEventListener('click', () => { deleteComment(btn.getAttribute('data-index')) });
+    }
+
+    for (let btn of svMain.querySelectorAll('.svEditCommentButton')) {
+        btn.addEventListener('click', () => { editComment(btn) });
     }
 
     svMain.querySelector('.svDealCard').style.display = 'flex';
@@ -605,16 +610,22 @@ const addBidBox = () => {
     return bidBox;
 };
 
-const updateBidView = () => {
-    let amountOfPasses = 4;
-    if (editorStorage[svSettings.selectedDeal]?.bids?.length) amountOfPasses = 3;
+const updateBidView = (data = null) => {
+    let bidData = [];
+    if (editorStorage[svSettings.selectedDeal]?.bids) bidData = editorStorage[svSettings.selectedDeal].bids;
+    if (data) { 
+        bidData = data.data.bids;
+        if (!editorStorage[svSettings.selectedDeal]) editorStorage[svSettings.selectedDeal] = {};
+        if (!editorStorage[svSettings.selectedDeal].bids) editorStorage[svSettings.selectedDeal].bids = [];
+        editorStorage[svSettings.selectedDeal].bids = data.data.bids;
+    }
     let bids = '';
-    if (editorStorage[svSettings.selectedDeal]?.bids?.length) {
-        for (let i = 0; i < editorStorage[svSettings.selectedDeal].bids.length; i++) {
-            const el = editorStorage[svSettings.selectedDeal].bids[i];
+    if (bidData.length) {
+        for (let i = 0; i < bidData.length; i++) {
+            const el = bidData[i];
             bids += `<div class="svBidBlock svBidBlockBid svBidType${el[0]}">${el[1]}</div>`;
         }
-        for (let i = 0; i < amountOfPasses; i++) {
+        for (let i = 0; i < 3; i++) {
             bids += '<div class="svBidBlock svBidBlockBid svBidTypePass">Pass</div>';
         }
     }
@@ -651,21 +662,27 @@ const addBidSlipEventListeners = () => {
     }
 };
 
-const addComment = (id = 0) => {
+const addComment = (id = 0, data = null) => {
     if (!eventLoaded) {
         showMessage('Turnausta ei ole ladattu.');
         return;
     }
     const sd = svSettings.selectedDeal;
     const dc = document.querySelector(`.svDealCard[data-index="${sd}"] .svFeedbackContainer`);
-    if (dc.parentElement.querySelector('.svCommentCard')) return;
+    if (dc.parentElement.querySelector('.svCommentCard')) {
+        if (data) showMessage('Edellinen kommentti työn alla.');
+        return;
+    }
+    if (!editorStorage[sd]) editorStorage[sd] = {};
+    if (!editorStorage[sd].bids) editorStorage[sd].bids = [];
+    editorStorage[sd].bids = [];
     const html = `<div class="svCommentCard flex-row" data-index="${sd}" data-id="${id}">
         <div class="svCommentEditor flex-row">
             ${addBidBox()}
         </div>
         <div class="svCommentTextContainer flex-col">
             <h3>Kommentit</h3>
-            <textarea class="svCommentTextArea" rows="9" cols="40"></textarea>
+            <textarea class="svCommentTextArea" rows="9" cols="40">${data?.data?.text ? data.data.text : ''}</textarea>
         </div>
         <div class="flex-col">
             <button class="svCloseButton" data-index="${sd}">X</button>
@@ -694,13 +711,27 @@ const addComment = (id = 0) => {
         if (id == 0) {
             cma.bids = editorStorage[sd].bids;
         } else {
-            //TODO kommentit mukaan
+            cma.bids = data.data.bids;
         }
         editorStorage[sd].bids = [];
         sendComment(cma, id);
     });
     addBidSlipEventListeners();
-    updateBidView();
+    updateBidView(data);
+};
+
+const editComment = (element) => {
+    const fbc = element.closest('.svFeedbackCard');
+    const commId = fbc.dataset.index;
+    const commData = commentData.find((com => {
+        return com.id == commId;
+    }));
+    console.log(fbc, commId, commData);
+    if (!commData) { 
+        showMessage('Jotakin meni vikaan, kommentin dataa ei löydy.', 'red');
+        return;
+    }
+    addComment(commId, commData);
 };
 
 const deleteComment = (id) => {
@@ -827,6 +858,7 @@ const loadComments = async () => {
     console.log(res);
     if (!res) return;
     if (res.status == 'no comments') res = null;
+    commentData = res;
     renderBoards(res);
 };
 
