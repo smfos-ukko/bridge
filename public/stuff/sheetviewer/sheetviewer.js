@@ -182,51 +182,59 @@ const renderResults = (dealIn) => {
 };
 
 const renderFeedback = (dealIn, comments) => {
-    console.log('renderfeeback comms: ', comments);
+    console.log(dealIn, comments);
     if (!comments) return '';
-    const injectBids = (ba) => {
-        let amountOfPasses = 4;
-        if (ba.length) amountOfPasses = 3;
-        let bids = '';
-        if (ba.length) {
-            for (let i = 0; i < ba.length; i++) {
-                const el = ba[i];
-                bids += `<div class="svBidBlock svBidBlockBid svBidType${el[0]}">${el[1]}</div>`;
+    const injectBids = (bax) => {
+        if (!bax.data.bids) return '';
+        try {
+            const ba = bax.data.bids;
+            let amountOfPasses = 3;
+            let bids = '';
+            if (ba.length) {
+                for (let i = 0; i < ba.length; i++) {
+                    const el = ba[i];
+                    bids += `<div class="svBidBlock svBidBlockBid svBidType${el[0]}">${el[1]}</div>`;
+                }
+                for (let i = 0; i < amountOfPasses; i++) {
+                    bids += '<div class="svBidBlock svBidBlockBid svBidTypePass">Pass</div>';
+                }
             }
-            for (let i = 0; i < amountOfPasses; i++) {
-                bids += '<div class="svBidBlock svBidBlockBid svBidTypePass">Pass</div>';
+            let complete = '';
+            complete = svData.deals[dealIn].boxBoilerplate + bids;
+            const count = complete.match(/\/div/g || []).length;
+            const remainder = count % 4;
+            const missing = remainder === 0 ? 0 : 4 - remainder;
+            for (let i = 0; i < missing; i++) {
+                complete += '<div class="svBidBlock svBidBlockBid"></div>';
             }
+            return complete;
+        } catch (e) {
+            console.log('error ', e);
         }
-        let complete = '';
-        complete = svData.deals[dealIn].boxBoilerplate + bids;
-        console.log(complete);
-        const count = complete.match(/\/div/g || []).length;
-        console.log(count);
-        const remainder = count % 4;
-        const missing = remainder === 0 ? 0 : 4 - remainder;
-        for (let i = 0; i < missing; i++) {
-            complete += '<div class="svBidBlock svBidBlockBid"></div>';
-        }
-        return complete;
     };
     const addEditingTools = (comm) => {
-        const u = sessionStorage.getItem('user');
-        if (!u) return '';
-        if (u != comm.username) return '';
-        return `
-            <div class="flex-row justify-end">
-                <button class="svEditCommentButton color-yellow" data-index="${comm.id}">🖉</button>
-                <button class="svDeleteCommentButton color-red" data-index="${comm.id}">X</button>
-            </div>
-        `;
+        try {
+            const u = sessionStorage.getItem('user');
+            if (!u) return '';
+            if (u != comm.username) return '';
+            return `
+                <div class="flex-row justify-end">
+                    <button class="svEditCommentButton color-yellow" data-index="${comm.id}">🖉</button>
+                    <button class="svDeleteCommentButton color-red" data-index="${comm.id}">X</button>
+                </div>
+            `;
+        } catch (e) {
+            console.log('error ', e);
+            return '';
+        }
     };
     let comms = '';
     for (let i = 0; i < comments.length; i++) {
-        if (comments[i].data.deal != dealIn) return '';
+        if (comments[i].data.deal != dealIn) continue;
         comms += `
                 <div class="svFeedbackCard flex-row" data-index="${comments[i].id}">
                     <div class="svBidViewContainer">
-                        ${injectBids(comments[i].data.bids)}
+                        ${injectBids(comments[i])}
                     </div>
                     <div class="flex-col justify-sb w-100">
                         <div class="svFeedbackTextContainer">
@@ -246,7 +254,6 @@ const renderFeedback = (dealIn, comments) => {
 
 const renderBoards = (comments = null) => {
     const svMain = document.getElementById('svMain');
-    console.log('RES', comments);
 
     //menyy
     let buttonsHtml = '';
@@ -338,6 +345,13 @@ const renderBoards = (comments = null) => {
             console.log(ex);
         }
     });
+
+    const commentConts = document.getElementsByClassName('svFeedbackContainer');
+    for (let fbc of commentConts) {
+        if (fbc.children.length) fbc.style.display = 'flex';
+        else fbc.style.display = 'none';
+    }
+
     switchDeal();
     const cdb = document.getElementById('svCommentDealButton');
     if (!cdb) return;
@@ -379,7 +393,6 @@ export async function sheetViewer() {
 
             const title = doc.querySelector('b').innerText;
             const sp = title.match(/^(\S+)\s+(.*)$/);
-            console.log(sp);
             svData.event = sp[2];
             svData.date = sp[1];
 
@@ -599,7 +612,6 @@ const updateBidView = () => {
     if (editorStorage[svSettings.selectedDeal]?.bids?.length) {
         for (let i = 0; i < editorStorage[svSettings.selectedDeal].bids.length; i++) {
             const el = editorStorage[svSettings.selectedDeal].bids[i];
-            console.log('el: ', editorStorage[svSettings.selectedDeal].bids);
             bids += `<div class="svBidBlock svBidBlockBid svBidType${el[0]}">${el[1]}</div>`;
         }
         for (let i = 0; i < amountOfPasses; i++) {
@@ -626,7 +638,6 @@ const addBidSlipEventListeners = () => {
             const deal = slip.closest('.svCommentCard').dataset.index;
             if (!editorStorage[deal]) editorStorage[deal] = {};
             if (!editorStorage[deal].bids) editorStorage[deal].bids = [];
-            console.log(editorStorage);
             if (slip.classList.contains('svSpecSlip')) {
                 if (slip.classList.contains('svCancelSlip')) {
                     editorStorage[deal].bids.pop();
@@ -685,7 +696,7 @@ const addComment = (id = 0) => {
         } else {
             //TODO kommentit mukaan
         }
-        console.log(cma);
+        editorStorage[sd].bids = [];
         sendComment(cma, id);
     });
     addBidSlipEventListeners();
@@ -693,13 +704,32 @@ const addComment = (id = 0) => {
 };
 
 const deleteComment = (id) => {
-    if (!sessionStorage.getItem('user') || !sessionStorage.getItem('token')) return;
+    const deleteComm = async () => {
+        if (!sessionStorage.getItem('user') || !sessionStorage.getItem('token')) return;
 
-    const token = sessionStorage.getItem('token');
+        const token = sessionStorage.getItem('token');
 
-    const res = await api('deletecomment', { token, id });
-    console.log(res);
-    if (res) loadComments();
+        const res = await api('deletecomment', { token, id: Number(id) });
+        return res;
+    };
+    Swal.fire({
+        title: "Poistetaanko varmasti?",
+        showDenyButton: true,
+        showCancelButton: false,
+        confirmButtonText: "Poista",
+        denyButtonText: `Peruuta`
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            const res = await deleteComm();
+            console.log(res);
+            if (res.status == 'deleted') {
+                Swal.fire("Kommentti poistettu", "", "success");
+                loadComments();
+            } else {
+                showMessage('Jotakin meni vikaan', 'red');
+            }
+        }
+    });
 };
 
 export const saveEvent = async () => {

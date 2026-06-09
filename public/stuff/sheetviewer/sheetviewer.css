@@ -259,12 +259,14 @@
 }
 
 .svFeedbackContainer {
+    display: none;
     background-color: #004989;
     width: 100%;
     padding: 10px;
     box-sizing: border-box;
     border-radius: 10px;
     gap: 10px;
+    margin-bottom: 10px;
 }
 
 .svFeedbackAuthorContainer {

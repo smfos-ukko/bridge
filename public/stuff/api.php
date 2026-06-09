@@ -311,7 +311,7 @@ switch ($action) {
             SELECT *
             FROM comments
             WHERE event_id = ?
-            ORDER BY updated_at DESC
+            ORDER BY created_at ASC
         ");
 
         $stmt->execute([$input['event']]);
@@ -386,8 +386,26 @@ switch ($action) {
         
         break;
 
-    case 'deleteComment':
+    case 'deletecomment':
+        $input = json_decode(file_get_contents('php://input'), true);
 
+        checkAuth($input);
+
+        $stmt = $db->prepare("SELECT user_id FROM comments WHERE user_id = ? AND id = ?");
+        $stmt->execute([$_SESSION['user_id'], $input['id']]);
+        $uid = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($uid) {
+            try {
+                $stmt = $db->prepare("DELETE FROM comments WHERE id = ?");
+                $stmt->execute([$input['id']]);
+                jsonResponse(['status' => 'deleted']);
+            } catch (PDOException $e) {
+                jsonResponse(['error' => 'db error'], 500);
+            }
+        } else {
+            jsonResponse(['error' => 'not found'], 400);
+        }
         break;
 
     default:
