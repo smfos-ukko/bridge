@@ -182,14 +182,66 @@ const renderResults = (dealIn) => {
 };
 
 const renderFeedback = (dealIn, comments) => {
+    console.log('renderfeeback comms: ', comments);
     if (!comments) return '';
+    const injectBids = (ba) => {
+        let amountOfPasses = 4;
+        if (ba.length) amountOfPasses = 3;
+        let bids = '';
+        if (ba.length) {
+            for (let i = 0; i < ba.length; i++) {
+                const el = ba[i];
+                bids += `<div class="svBidBlock svBidBlockBid svBidType${el[0]}">${el[1]}</div>`;
+            }
+            for (let i = 0; i < amountOfPasses; i++) {
+                bids += '<div class="svBidBlock svBidBlockBid svBidTypePass">Pass</div>';
+            }
+        }
+        let complete = '';
+        complete = svData.deals[dealIn].boxBoilerplate + bids;
+        console.log(complete);
+        const count = complete.match(/\/div/g || []).length;
+        console.log(count);
+        const remainder = count % 4;
+        const missing = remainder === 0 ? 0 : 4 - remainder;
+        for (let i = 0; i < missing; i++) {
+            complete += '<div class="svBidBlock svBidBlockBid"></div>';
+        }
+        return complete;
+    };
+    const addEditingTools = (comm) => {
+        const u = sessionStorage.getItem('user');
+        if (!u) return '';
+        if (u != comm.username) return '';
+        return `
+            <div class="flex-row justify-end">
+                <button class="svEditCommentButton color-yellow" data-index="${comm.id}">🖉</button>
+                <button class="svDeleteCommentButton color-red" data-index="${comm.id}">X</button>
+            </div>
+        `;
+    };
+    let comms = '';
     for (let i = 0; i < comments.length; i++) {
         if (comments[i].data.deal != dealIn) return '';
-        return `
-                <p>${comments[i].data.text}</p>
-                <p class="svEditorInfo">${comments[i].updated_at}</p>
+        comms += `
+                <div class="svFeedbackCard flex-row" data-index="${comments[i].id}">
+                    <div class="svBidViewContainer">
+                        ${injectBids(comments[i].data.bids)}
+                    </div>
+                    <div class="flex-col justify-sb w-100">
+                        <div class="svFeedbackTextContainer">
+                            <p>${comments[i].data.text}</p>
+                        </div>
+                        <div class="svFeedbackAuthorContainer">
+                            ${addEditingTools(comments[i])}
+                            <p class="svEditorInfo">${comments[i].updated_at}</p>
+                            <p class="svEditorInfo">Kirjoittaja: ${comments[i].username}</p>
+                        </div>
+                    </div>
+                </div>        
             `;
     }
+    return comms;
 };
 
 const renderBoards = (comments = null) => {
@@ -223,7 +275,7 @@ const renderBoards = (comments = null) => {
                     <div class="svDealHand">${renderDeal(svData.deals[i].hands.s)}</div>
                     <div class="svDealTricks">${renderTricks(i)}</div>
                 </div>
-                <div class="svFeedbackContainer flex-row">${renderFeedback(i, comments)}</div>
+                <div class="svFeedbackContainer flex-col">${renderFeedback(i, comments)}</div>
                 <div class="svDealResultsContainer">${renderResults(i)}</div>
             </div>
         `;
@@ -259,6 +311,10 @@ const renderBoards = (comments = null) => {
                 renderBoards();   
             }, 50);
         });
+    }
+
+    for (let btn of svMain.querySelectorAll('.svDeleteCommentButton')) {
+        btn.addEventListener('click', () => { deleteComment(btn.getAttribute('data-index')) });
     }
 
     svMain.querySelector('.svDealCard').style.display = 'flex';
@@ -423,8 +479,7 @@ export async function sheetViewer() {
                         },
                         optimum: ch[13].trim(),
                         tricks: [],
-                        results: [],
-                        comments: []
+                        results: []
                     };
                 }
 
@@ -591,7 +646,7 @@ const addComment = (id = 0) => {
         return;
     }
     const sd = svSettings.selectedDeal;
-    const dc = document.querySelector(`.svDealCard[data-index="${sd}"] .svGrid`);
+    const dc = document.querySelector(`.svDealCard[data-index="${sd}"] .svFeedbackContainer`);
     if (dc.parentElement.querySelector('.svCommentCard')) return;
     const html = `<div class="svCommentCard flex-row" data-index="${sd}" data-id="${id}">
         <div class="svCommentEditor flex-row">
@@ -622,14 +677,29 @@ const addComment = (id = 0) => {
         const cma = {
             creator: sessionStorage.getItem('user'),
             deal: sd,
-            bids: dc.parentElement.querySelector('.svBidViewContainer').outerHTML,
+            bids: null,
             text: dc.parentElement.querySelector('.svCommentTextArea').value
         };
+        if (id == 0) {
+            cma.bids = editorStorage[sd].bids;
+        } else {
+            //TODO kommentit mukaan
+        }
         console.log(cma);
         sendComment(cma, id);
     });
     addBidSlipEventListeners();
     updateBidView();
+};
+
+const deleteComment = (id) => {
+    if (!sessionStorage.getItem('user') || !sessionStorage.getItem('token')) return;
+
+    const token = sessionStorage.getItem('token');
+
+    const res = await api('deletecomment', { token, id });
+    console.log(res);
+    if (res) loadComments();
 };
 
 export const saveEvent = async () => {
@@ -691,8 +761,8 @@ const loadEvents = async () => {
             svReset();
             svData = eventStorage[Number(lcb.dataset.index)].data;
             svData.eventId = e.target.dataset.event;
-            renderBoards();
             eventLoaded = true;
+            loadComments();
         });
         lcc.appendChild(lcb);
     }
@@ -723,9 +793,10 @@ const loadComments = async () => {
     const username = sessionStorage.getItem('user');
     const token = sessionStorage.getItem('token');
 
-    const res = await api('loadcomments', { username, token, event: svData.eventId });
+    let res = await api('loadcomments', { username, token, event: svData.eventId });
     console.log(res);
     if (!res) return;
+    if (res.status == 'no comments') res = null;
     renderBoards(res);
 };
 

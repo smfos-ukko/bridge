@@ -50,6 +50,26 @@ h3 {
     align-items: center;
 }
 
+.justify-sb {
+    justify-content: space-between;
+}
+
+.justify-end {
+    justify-content: end;
+}
+
+.w-100 {
+    width: 100%;
+}
+
+.color-yellow {
+    background-color: yellow;
+}
+
+.color-red {
+    background-color: red;
+}
+
 .banner {
     display: flex;
     position: relative;

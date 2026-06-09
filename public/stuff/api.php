@@ -324,7 +324,7 @@ switch ($action) {
             }
             jsonResponse($rows);
         } else {
-            jsonResponse(['error' => 'not found'], 400);
+            jsonResponse(['status' => 'no comments']);
         }
 
         break;

@@ -258,6 +258,28 @@
     margin-left: 20px;
 }
 
+.svFeedbackContainer {
+    background-color: #004989;
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    border-radius: 10px;
+    gap: 10px;
+}
+
+.svFeedbackAuthorContainer {
+    text-align: end;
+}
+
+.svFeedbackCard {
+    background-color: #160065;
+    border-radius: 5px;
+}
+
+.svFeedbackCard>div {
+    margin: 5px;
+}
+
 @media (max-width: 630px) {
     #svMain {
         margin-top: 15px;
