@@ -62,6 +62,10 @@ h3 {
     width: 100%;
 }
 
+.invisible-light {
+    display: none;
+}
+
 .invisible {
     display: none !important;
 }

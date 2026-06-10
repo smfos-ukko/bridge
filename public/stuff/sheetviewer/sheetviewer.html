@@ -4,13 +4,14 @@
         <input type="text" id="svInput">
         <button id="svFetchButton" class="mainbutton">Hae lakana</button>
         <button id="svLoadPbnButton" class="mainbutton">Avaa PBN</button>
+        <button id="svLoadDatButton" class="mainbutton">Lisää DAT</button>
         <button id="svShareButton" class="mainbutton">Jaa linkki</button>
         <p class="svVisibleOnDesktop">Voit liikkua nuolinäppäimillä<br />jakojen välillä.</p>
         <div id="commentOuter">
             <div id="svToolCard" class="flex-col align-center">
                 <h3>Kommentit</h3>
-                <input type="text" id="svSaveEventInput" placeholder="Anna tapahtuman nimi">
-                <button id="svSaveEventButton">Kommentoi</button>
+                <input type="text" id="svSaveEventInput" class="invisible-light" placeholder="Anna tapahtuman nimi">
+                <button id="svSaveEventButton" class="invisible-light">Luo kommentit</button>
                 <div id="loadedEventsContainer"></div>
                 <div id="commentToolsContainer"></div>
             </div>

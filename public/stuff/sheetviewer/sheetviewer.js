@@ -1,5 +1,6 @@
 import { showMessage } from "../bridge.js";
 import { pbnReader } from "../pbnreader.js";
+import { datReader } from "../datreader.js";
 import { api } from "../bridge.js";
 
 let svData = {
@@ -254,6 +255,7 @@ const renderFeedback = (dealIn, comments) => {
 };
 
 const renderBoards = (comments = null) => {
+    if (commentData) comments = commentData;
     const svMain = document.getElementById('svMain');
 
     //menyy
@@ -358,9 +360,32 @@ const renderBoards = (comments = null) => {
     }
 
     switchDeal();
-    const cdb = document.getElementById('svCommentDealButton');
-    if (!cdb) return;
-    cdb.style.display = 'inline-block';
+    console.log('asd', svData);
+    const disList = [
+        'svSaveEventInput',
+        'svSaveEventButton'
+    ];
+    if (svData.saved) {
+        disList.push('svCommentDealButton');
+        disList.push('svShareEventButton');
+    }
+    disList.forEach(eid => {
+        const el = document.getElementById(eid);
+        if (el) el.style.display = 'inline-block';
+    });
+};
+
+const shareEvent = () => {
+    let writeLink = window.location.href;
+    writeLink = writeLink.split('?')[0];
+    writeLink += '?event=';
+    writeLink += svData.eventId;
+    try {
+        navigator.clipboard.writeText(writeLink);
+        showMessage('Linkki kopioitu');
+    } catch(ex) {
+        console.log(ex);
+    }
 };
 
 const svReset = () => {
@@ -372,9 +397,15 @@ const svReset = () => {
     svSettings.selectedDeal = 1;
     svSettings.selectedPair = null;
     eventLoaded = false;
-    const cdb = document.getElementById('svCommentDealButton');
-    if (!cdb) return;
-    cdb.style.display = 'none';
+    const disList = [
+        'svCommentDealButton',
+        'svSaveEventInput',
+        'svSaveEventButton'
+    ];
+    disList.forEach(eid => {
+        const el = document.getElementById(eid);
+        if (el) el.style.display = 'none';
+    });
 }
 
 export async function sheetViewer() {
@@ -543,6 +574,20 @@ export async function sheetViewer() {
             }
         });
     });
+
+    document.getElementById('svLoadDatButton').addEventListener('click', () => {
+        datReader().then(data => {
+            if (data) {
+                svData.pairs = data.pairs;
+                for (let i = 1; i <= Object.keys(data.deals).length; i++) {
+                    svData.deals[i].results = data.deals[i].results;
+                }
+                renderBoards();
+            } else {
+                showMessage('Virhe!', 'red');
+            }
+        });
+    });
 }
 
 export const setPair = (pairToSet) => {
@@ -550,6 +595,10 @@ export const setPair = (pairToSet) => {
     setTimeout(() => {
         renderBoards();
     }, 1500); 
+};
+
+export const setEvent = (id) => {
+    loadEvents(id, true)
 };
 
 const addBoilerPlates = () => {
@@ -626,7 +675,7 @@ const updateBidView = (data = null) => {
             bids += `<div class="svBidBlock svBidBlockBid svBidType${el[0]}">${el[1]}</div>`;
         }
         for (let i = 0; i < 3; i++) {
-            bids += '<div class="svBidBlock svBidBlockBid svBidTypePass">Pass</div>';
+            bids += '<div class="svBidBlock svBidBlockBid svBidTypePass svNoEditor">Pass</div>';
         }
     }
     let box = document.querySelector(`.svCommentCard[data-index="${svSettings.selectedDeal}"] .svBidViewContainer`);
@@ -794,45 +843,75 @@ export const saveEvent = async () => {
     else showMessage('Virhe!', 'red');
 };
 
-const loadEvents = async () => {
-    if (!sessionStorage.getItem('user') || !sessionStorage.getItem('token')) return;
+const loadEvents = async (id = null, share = false) => {
+    let res = null;
+    if (!share) {
+        if (!sessionStorage.getItem('user') || !sessionStorage.getItem('token')) return;
 
-    const token = sessionStorage.getItem('token');
+        const token = sessionStorage.getItem('token');
 
-    if (!token) {
-        showMessage('Token not set.');
-        return;
+        if (!token) {
+            showMessage('Token not set.');
+            return;
+        }
+
+        res = await api('loadevents', { token });
+    } else {
+        if (!id) {
+            showMessage('Turnausta ei löydy.');
+            return;
+        }
+        res = await api('loadevent', { id });
     }
 
-    const res = await api('loadevents', { token });
     if (!res) return; 
     emptyEvents();
-    for (let i = 0; i < res.length; i++) {
-        eventStorage.push(res[i]);
+    if (!share) {
+        for (let i = 0; i < res.length; i++) {
+            eventStorage.push(res[i]);
+        }
+    } else {
+        eventStorage.push(res);
+    }    
+    
+    console.log(eventStorage, res);
+    const lcc = document.getElementById('loadedEventsContainer');
+    if (!share) {
+        for (let i = 0; i < eventStorage.length; i++) {
+            const lcb = document.createElement('button');
+            lcb.dataset.index = i;
+            lcb.dataset.event = eventStorage[i].id;
+            lcb.innerText = eventStorage[i].name;
+            lcb.addEventListener('click', (e) => {
+                svReset();
+                svData = eventStorage[Number(lcb.dataset.index)].data;
+                svData.eventId = Number(e.target.dataset.event);
+                eventLoaded = true;
+                loadComments();
+            });
+            lcc.appendChild(lcb);
+        }
+    } else {
+        svData = res.data;
+        svData.eventId = Number(id);
+        eventLoaded = true;
+        loadComments();
     }
     
-    console.log(eventStorage);
-    const lcc = document.getElementById('loadedEventsContainer');
-    for (let i = 0; i < eventStorage.length; i++) {
-        const lcb = document.createElement('button');
-        lcb.dataset.index = i;
-        lcb.dataset.event = eventStorage[i].id;
-        lcb.innerText = eventStorage[i].name;
-        lcb.addEventListener('click', (e) => {
-            svReset();
-            svData = eventStorage[Number(lcb.dataset.index)].data;
-            svData.eventId = e.target.dataset.event;
-            eventLoaded = true;
-            loadComments();
-        });
-        lcc.appendChild(lcb);
-    }
-    const acb = document.createElement('button');
+    let acb = document.createElement('button');
     acb.id = 'svCommentDealButton';
     acb.innerText = 'Kommentoi jakoa';
     acb.style.display = 'none';
     acb.addEventListener('click', () => {
         addComment();
+    });
+    lcc.appendChild(acb);
+    acb = document.createElement('button');
+    acb.id = 'svShareEventButton';
+    acb.innerText = 'Jaa kommentit';
+    acb.style.display = 'none';
+    acb.addEventListener('click', () => {
+        shareEvent();
     });
     lcc.appendChild(acb);
 };
@@ -849,12 +928,7 @@ const sendComment = async (commentArray, id) => {
 };
 
 const loadComments = async () => {
-    if (!sessionStorage.getItem('user') || !sessionStorage.getItem('token')) return;
-
-    const username = sessionStorage.getItem('user');
-    const token = sessionStorage.getItem('token');
-
-    let res = await api('loadcomments', { username, token, event: svData.eventId });
+    let res = await api('loadcomments', { event: svData.eventId });
     console.log(res);
     if (!res) return;
     if (res.status == 'no comments') res = null;

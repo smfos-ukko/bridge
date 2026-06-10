@@ -146,6 +146,11 @@
     padding: 10px;
 }
 
+#svCommentDealButton {
+    margin-top: 10px;
+    background-color: #08f;
+}
+
 .svBidBox {
     background-color: #0d0c35;
     padding: 5px;
@@ -254,8 +259,17 @@
     height: 50px;
 }
 
+#svSaveEventButton {
+    background-color: #3bd204;
+    margin-top: 5px;
+}
+
 #svDate {
     margin-left: 20px;
+}
+
+.svCommentEditor .svNoEditor {
+    background-color: #b3b3b3;
 }
 
 .svFeedbackContainer {
@@ -318,6 +332,7 @@
         position: absolute;
         top: 20px;
         right: 20px;
+        max-width: 220px;
     }
 
     #svGrid {

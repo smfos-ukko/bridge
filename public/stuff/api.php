@@ -303,6 +303,22 @@ switch ($action) {
 
         jsonResponse($rows);
         break;
+    case 'loadevent':
+        $input = json_decode(file_get_contents('php://input'), true);
+
+        $stmt = $db->prepare("
+            SELECT id, name, data, updated_at
+            FROM events
+            WHERE id = ?
+        ");
+
+        $stmt->execute([$input['id']]);
+        $event = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        $event['data'] = json_decode($event['data'], true);
+
+        jsonResponse($event);
+        break;
 
     case 'loadcomments':
         $input = json_decode(file_get_contents('php://input'), true);

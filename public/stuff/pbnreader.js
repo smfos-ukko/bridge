@@ -11,6 +11,8 @@ const pbnReset = () => {
 };
 
 const handleBuffer = (dl, bf) => {
+    console.log('BUFFER', dl, bf);
+    if (!bf.length) return;
     const type = bf[0];
     const header = bf[1];
     let headerData = [''];
@@ -172,6 +174,7 @@ export const pbnReader = () => {
                 for (let i = 0; i < lines.length; i++) {
                     if (lines[i] == '') continue;
                     if (lines[i][0] == '%') continue;
+                    console.log(lines[i]);
                     if (readerMode == 'bracket') { 
                         const ln = readBracket(lines[i]);
                         if (!ln) {
@@ -229,12 +232,16 @@ export const pbnReader = () => {
                                 buffer.push(ln[0]);
                                 buffer.push(ln[1]);
                                 continue;
+                            case 'Play':
+                                readerMode = 'skip';
+                                continue;
                             default:
                                 break;
                         }
                     }
-                    if (readerMode == 'buffer') {
-                        buffer.push(lines[i]);
+
+                    if (readerMode == 'buffer' || readerMode == 'skip') {
+                        if (readerMode == 'buffer') buffer.push(lines[i]);
                         if (!lines[i+1]) {
                             handleBuffer(board, buffer);
                             continue;
@@ -247,6 +254,7 @@ export const pbnReader = () => {
                             handleBuffer(board, buffer);
                         }
                     }
+
                 }
                 for (const [key, value] of Object.entries(optimums)) {
                     pbnData.deals[key].optimum = value[0] + ' ' + value[1];
