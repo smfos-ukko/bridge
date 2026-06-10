@@ -920,6 +920,14 @@ const loadComments = async () => {
 };
 
 document.addEventListener('keydown', (e) => {
+    const active = document.activeElement;
+    const isTyping = 
+        active &&
+        (active.tagName === 'INPUT' ||
+        active.tagName === 'TEXTAREA' ||
+        active.isContentEditable
+    );
+    if (isTyping) return;
     if (e.key === 'ArrowRight') switchDeal('next');
     if (e.key === 'ArrowLeft') switchDeal('prev');
 });
