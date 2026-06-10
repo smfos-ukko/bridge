@@ -1,5 +1,23 @@
 #sheetviewer {
     position: relative;
+    min-height: 150vh;
+    justify-content: space-between;
+}
+
+#explanation p {
+    font-size: 14px;
+}
+
+#explanation b {
+    font-weight: bolder;
+}
+
+#askContainer {
+    margin-top: 10px;
+}
+
+.svDealButton.commented {
+    background-color: #6363ff;
 }
 
 .toolContainer {
@@ -297,8 +315,13 @@
 }
 
 @media (max-width: 630px) {
+    #sheetviewer {
+        flex-direction: column;
+    }
+
     #svMain {
         margin-top: 15px;
+        margin-bottom: 15px;
     }
 
     .svDealCard {
@@ -317,6 +340,81 @@
     .svVisibleOnDesktop {
         display: none;
     }
+
+    .svFeedbackCard {
+        flex-direction: column;
+    }
+
+    .svFeedbackAuthorContainer {
+        padding-right: 20px;
+        ;
+    }
+
+    .svFeedbackAuthorContainer button {
+        padding: 0;
+    }
+
+    .svDeleteCommentButton {
+        margin-right: 0;
+    }
+
+    .svFeedbackTextContainer {
+        font-size: 13px;
+    }
+
+    .svFeedbackContainer {
+        margin-top: 10px;
+    }
+
+    .svCommentCard {
+        flex-direction: column;
+        box-sizing: border-box;
+    }
+
+    .svCommentEditor {
+        flex-direction: column;
+        min-width: unset;
+        align-items: center;
+    }
+
+    .svSpecSlip {
+        width: 100%;
+    }
+
+    .svBidSlip {
+        font-size: 16px;
+    }
+
+    .svCommentTextContainer {
+        width: unset;
+    }
+
+    .svBidViewContainer {
+        width: 65vw;
+        font-size: 18px;
+        align-self: center;
+    }
+
+    .svComButtons {
+        flex-direction: row;
+    }
+
+    .svComButtons button {
+        width: 100%;
+        margin-right: 0;
+        height: 30px;
+        font-size: 18px;
+    }
+
+    .svCommentField {
+        width: unset;
+    }
+
+    .svBidBox {
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 5px;
+    }
 }
 
 @media (min-width: 631px) {
@@ -328,12 +426,11 @@
         grid-template-columns: 3fr 3fr repeat(7, 1fr);
     }
 
+
     #svRight {
-        position: absolute;
-        top: 20px;
-        right: 20px;
         max-width: 220px;
     }
+
 
     #svGrid {
         max-width: 550px;
@@ -371,6 +468,10 @@
     }
 
     #svDealView {
-        max-width: 78%;
+        width: 100%;
+    }
+
+    #svRight {
+        margin-left: 15px;
     }
 }

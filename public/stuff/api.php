@@ -278,7 +278,7 @@ switch ($action) {
                 $input['name'],
                 json_encode($input['data'])
             ]);
-            jsonResponse(['status' => 'saved']);
+            jsonResponse(['status' => ['saved', $db->lastInsertId()]]);
         }
         break;
 

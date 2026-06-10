@@ -259,6 +259,7 @@ export const pbnReader = () => {
                 for (const [key, value] of Object.entries(optimums)) {
                     pbnData.deals[key].optimum = value[0] + ' ' + value[1];
                 }
+                pbnData.fromSheet = false;
                 console.log(pbnData);
                 resolve(pbnData);
             };

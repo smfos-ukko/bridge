@@ -189,7 +189,6 @@ const renderFeedback = (dealIn, comments) => {
         if (!bax.data.bids) return '';
         try {
             const ba = bax.data.bids;
-            console.log('onkoniita', ba);
             let amountOfPasses = 3;
             let bids = '';
             if (ba.length) {
@@ -255,13 +254,19 @@ const renderFeedback = (dealIn, comments) => {
 };
 
 const renderBoards = (comments = null) => {
-    if (commentData) comments = commentData;
+    const commented = [];
+    if (commentData) {
+        comments = commentData;
+        for (let i = 0; i < commentData.length; i++) {
+            commented.push(Number(commentData[i].data.deal));
+        }
+    }
     const svMain = document.getElementById('svMain');
 
     //menyy
     let buttonsHtml = '';
     for (let i = 1; i <= Object.keys(svData.deals).length; i++) {
-        buttonsHtml += `<button class="svDealButton" data-index="${i}">${i}</button>`
+        buttonsHtml += `<button class="svDealButton ${commented.includes(i) ? 'commented' : ''}" data-index="${i}">${i}</button>`
     }
 
     //deal
@@ -333,7 +338,6 @@ const renderBoards = (comments = null) => {
 
     svMain.querySelector('.svDealCard').style.display = 'flex';
     const shareButton = document.getElementById('svShareButton');
-    shareButton.style.display = 'block';
     shareButton.addEventListener('click', () => {
         const currentPage = window.location.href;
         const currentLink = document.getElementById('svInput').value;
@@ -360,19 +364,8 @@ const renderBoards = (comments = null) => {
     }
 
     switchDeal();
-    console.log('asd', svData);
-    const disList = [
-        'svSaveEventInput',
-        'svSaveEventButton'
-    ];
-    if (svData.saved) {
-        disList.push('svCommentDealButton');
-        disList.push('svShareEventButton');
-    }
-    disList.forEach(eid => {
-        const el = document.getElementById(eid);
-        if (el) el.style.display = 'inline-block';
-    });
+    console.log('svData', svData);
+    updateRightMenu();
 };
 
 const shareEvent = () => {
@@ -397,15 +390,7 @@ const svReset = () => {
     svSettings.selectedDeal = 1;
     svSettings.selectedPair = null;
     eventLoaded = false;
-    const disList = [
-        'svCommentDealButton',
-        'svSaveEventInput',
-        'svSaveEventButton'
-    ];
-    disList.forEach(eid => {
-        const el = document.getElementById(eid);
-        if (el) el.style.display = 'none';
-    });
+    updateRightMenu();
 }
 
 export async function sheetViewer() {
@@ -464,7 +449,6 @@ export async function sheetViewer() {
                     svData.pairs[pairNumber] = playerNames;
                 }
             }
-            console.log(svData);
 
             //Jaot
             const dtxt = dealsText.split('\n');
@@ -556,9 +540,11 @@ export async function sheetViewer() {
             showMessage('Virhe! ' + err, 'red');
         }
         svData.saved = false;
+        svData.fromSheet = true;
         addBoilerPlates();
         renderBoards();
         eventLoaded = true;
+        updateRightMenu('sheetLoad');
     });
 
     document.getElementById('svLoadPbnButton').addEventListener('click', () => {
@@ -566,9 +552,9 @@ export async function sheetViewer() {
             if (data) {
                 svReset();
                 svData = data;
+                eventLoaded = true;
                 addBoilerPlates();
                 renderBoards();
-                eventLoaded = true;
             } else {
                 showMessage('Virhe!', 'red');
             }
@@ -733,7 +719,7 @@ const addComment = (id = 0, data = null) => {
             <h3>Kommentit</h3>
             <textarea class="svCommentTextArea" rows="9" cols="40">${data?.data?.text ? data.data.text : ''}</textarea>
         </div>
-        <div class="flex-col">
+        <div class="svComButtons flex-col">
             <button class="svCloseButton" data-index="${sd}">X</button>
             <button class="svInjectCommentButton">Lisää</button>
         </div>
@@ -775,7 +761,6 @@ const editComment = (element) => {
     const commData = commentData.find((com => {
         return com.id == commId;
     }));
-    console.log(fbc, commId, commData);
     if (!commData) { 
         showMessage('Jotakin meni vikaan, kommentin dataa ei löydy.', 'red');
         return;
@@ -801,7 +786,6 @@ const deleteComment = (id) => {
     }).then(async (result) => {
         if (result.isConfirmed) {
             const res = await deleteComm();
-            console.log(res);
             if (res.status == 'deleted') {
                 Swal.fire("Kommentti poistettu", "", "success");
                 loadComments();
@@ -834,8 +818,9 @@ export const saveEvent = async () => {
     }
     svData.saved = true;
     const res = await api('saveevent', { username: username, token, name, data: svData });
-    console.log('createComments', res.status);
-    if (res.status == 'saved') {
+    if (res.status[0] == 'saved') {
+        svData.eventId = Number(res.status[1]);
+        console.log(svData);
         showMessage('Tallennettu.');
         loadEvents();
     }
@@ -874,13 +859,13 @@ const loadEvents = async (id = null, share = false) => {
         eventStorage.push(res);
     }    
     
-    console.log(eventStorage, res);
     const lcc = document.getElementById('loadedEventsContainer');
     if (!share) {
         for (let i = 0; i < eventStorage.length; i++) {
             const lcb = document.createElement('button');
             lcb.dataset.index = i;
             lcb.dataset.event = eventStorage[i].id;
+            lcb.classList.add('svEventInstance');
             lcb.innerText = eventStorage[i].name;
             lcb.addEventListener('click', (e) => {
                 svReset();
@@ -901,19 +886,19 @@ const loadEvents = async (id = null, share = false) => {
     let acb = document.createElement('button');
     acb.id = 'svCommentDealButton';
     acb.innerText = 'Kommentoi jakoa';
-    acb.style.display = 'none';
     acb.addEventListener('click', () => {
-        addComment();
+        if (sessionStorage.getItem('user')) addComment(); 
+        else showMessage('Kirjaudu sisään kommentoidaksesi.');
     });
     lcc.appendChild(acb);
     acb = document.createElement('button');
     acb.id = 'svShareEventButton';
     acb.innerText = 'Jaa kommentit';
-    acb.style.display = 'none';
     acb.addEventListener('click', () => {
         shareEvent();
     });
     lcc.appendChild(acb);
+    updateRightMenu();
 };
 
 const sendComment = async (commentArray, id) => {
@@ -923,13 +908,11 @@ const sendComment = async (commentArray, id) => {
     const token = sessionStorage.getItem('token');
 
     const res = await api('sendcomment', { username, token, event: svData.eventId, id, data: commentArray });
-    console.log(res);
     if (res) loadComments();
 };
 
 const loadComments = async () => {
     let res = await api('loadcomments', { event: svData.eventId });
-    console.log(res);
     if (!res) return;
     if (res.status == 'no comments') res = null;
     commentData = res;
@@ -946,6 +929,42 @@ const emptyEvents = () => {
     document.getElementById('loadedEventsContainer').innerHTML = '';
 };
 
+const updateRightMenu = () => {
+    console.log('rightmenu updated');
+    const els = [
+        '#svShareButton',
+        '#svSaveEventInput',
+        '#svSaveEventButton',
+        '.svEventInstance',
+        '#svCommentDealButton',
+        '#svShareEventButton'
+    ];
+    els.forEach(h => {
+        const th = document.querySelectorAll(h);
+        th.forEach(t => { t.style.display = 'none'; });
+        console.log('hide: ', th);
+    });
+
+    const showEl = (hel) => {
+        hel.forEach(h => {
+            const th = document.querySelectorAll(els[h]);
+            th.forEach(t => { t.style.display = 'inline-block'; });
+            console.log('show: ', h, th);
+        });
+    };
+    if (sessionStorage.getItem('user')) {
+        showEl([3]);
+    }
+    if (!eventLoaded) return;
+    if (svData.fromSheet) {
+        showEl([0]);
+    }
+    if (!svData.saved) {
+        showEl([1, 2]);
+    }
+    showEl([4, 5]);
+};
+
 export const viewerCheckLogin = () => {
     if (!sessionStorage.getItem('user')) {
         emptyEvents();
@@ -953,6 +972,7 @@ export const viewerCheckLogin = () => {
     }
     if (document.getElementById('commentOuter')) {
         loadEvents();
+        updateRightMenu();
     }
 };
 
@@ -960,7 +980,13 @@ export const initViewer = () => {
     document.getElementById('svSaveEventButton').addEventListener('click', () => {
         saveEvent();
     });
+    document.getElementById('questionMark').addEventListener('click', () => {
+        const info = document.getElementById('explanation');
+        if (info.classList.contains('invisible-light')) info.classList.remove('invisible-light');
+        else info.classList.add('invisible-light');
+    });
     if (sessionStorage.getItem('user') && Object.keys(eventStorage).length == 0) {
         loadEvents();
     }
+    updateRightMenu();
 };

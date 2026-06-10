@@ -83,7 +83,8 @@ const openPage = (page) => {
     let pe = document.getElementById(page);
     setTimeout(() => {
         mainPage.style.display = 'none';
-        pe.style.display = 'block';
+        if (pe.classList.contains('flex-row')) pe.style.display = 'flex';
+        else pe.style.display = 'block';
         backButton.style.display = 'block';
     }, 100);
     setTimeout(() => {

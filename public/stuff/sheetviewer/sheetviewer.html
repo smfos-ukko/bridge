@@ -1,4 +1,5 @@
-<div id="sheetviewer" class="subpage toolpage">
+<div id="sheetviewer" class="subpage toolpage flex-row">
+    <div id="svMain"></div>
     <div id="svRight">
         <h3>Lisää URL</h3>
         <input type="text" id="svInput">
@@ -6,7 +7,6 @@
         <button id="svLoadPbnButton" class="mainbutton">Avaa PBN</button>
         <button id="svLoadDatButton" class="mainbutton">Lisää DAT</button>
         <button id="svShareButton" class="mainbutton">Jaa linkki</button>
-        <p class="svVisibleOnDesktop">Voit liikkua nuolinäppäimillä<br />jakojen välillä.</p>
         <div id="commentOuter">
             <div id="svToolCard" class="flex-col align-center">
                 <h3>Kommentit</h3>
@@ -16,6 +16,22 @@
                 <div id="commentToolsContainer"></div>
             </div>
         </div>
+        <div id="askContainer">
+            <button id="questionMark">?</button>
+            <div id="explanation" class="invisible-light">
+                <p class="svVisibleOnDesktop">Voit liikkua nuolinäppäimillä jakojen välillä. Kirjaudu sisään
+                    kommentoidaksesi jakoja.</p><br />
+                <p><b>Hae lakana</b> hakee Bridgeliiton sivuilta löytyvien MP-kisojen tulokset tekstikentään kopioidusta
+                    URL-osoitteesta.</p>
+                <p><b>Avaa PBN</b> lukee laskentaohjelmien tekemiä PBN-tiedostoja joissa on jakodataa ja mahdollisesti
+                    tulokset.</p>
+                <p><b>Lisää DAT</b> hakee toistaiseksi vaihtelevalla menestyksellä PBN-tiedostosta puuttuvia pari- ja
+                    tulostietoja.</p>
+                <p><b>Jaa linkki</b> kopioi leikepöydälle Bridgeliiton lakanasta linkin vain liiton lakanasta parsitut
+                    tulokset.</p>
+                <p><b>Luo kommentit</b> tallentaa millä tahansa menetelmällä noudetun datan serverille ja mahdollistaa
+                    kommentoinnin. Vaatii kirjautumisen.</p>
+            </div>
+        </div>
     </div>
-    <div id="svMain"></div>
 </div>
