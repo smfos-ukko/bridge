@@ -243,7 +243,7 @@ const renderFeedback = (dealIn, comments) => {
                         </div>
                         <div class="svFeedbackAuthorContainer">
                             ${addEditingTools(comments[i])}
-                            <p class="svEditorInfo">${comments[i].updated_at}</p>
+                            <p class="svEditorInfo invisible">${comments[i].updated_at}</p>
                             <p class="svEditorInfo">Kirjoittaja: ${comments[i].username}</p>
                         </div>
                     </div>
